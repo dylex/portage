@@ -26,6 +26,10 @@ src_configure() {
 	econf $(use_enable adns)
 }
 
+src_install() {
+	emake DESTDIR="${D}" install || die
+}
+
 pkg_postinst() {
 	enewgroup gale
 	enewuser gale -1 -1 /etc/gale gale
