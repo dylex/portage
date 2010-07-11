@@ -23,7 +23,9 @@ S=${WORKDIR}/${ECVS_MODULE}
 
 src_unpack() {
 	cvs_src_unpack
-	cd "${S}"
+}
+
+src_prepare() {
 	sed -e 's/@VERSION@/[CVS]/' META.in > META
 }
 

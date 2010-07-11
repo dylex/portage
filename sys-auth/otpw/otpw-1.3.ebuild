@@ -1,6 +1,6 @@
 EAPI=3
 
-inherit eutils pam
+inherit base pam
 
 DESCRIPTION="A one-time password login package"
 HOMEPAGE="http://www.cl.cam.ac.uk/~mgk25/otpw.html"
@@ -16,15 +16,7 @@ RDEPEND="${DEPEND}"
 
 S=${WORKDIR}/${PN}
 
-src_unpack() {
-	unpack ${A}
-	cd "${S}"
-	epatch "${FILESDIR}/otpw-fPIC.patch"
-}
-
-src_compile() {
-	emake || die
-}
+PATCHES=( "${FILESDIR}/otpw-fPIC.patch" )
 
 src_install() {
 	dobin otpw-gen
