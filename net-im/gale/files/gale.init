@@ -1,0 +1,19 @@
+#!/sbin/runscript
+
+depend() {
+	need net
+}
+
+start() {
+	ebegin "Starting galed"
+	start-stop-daemon --start -c gale:gale -e HOME=/etc/gale -x /usr/bin/galed
+	start-stop-daemon --start -c gale:gale -e HOME=/etc/gale -x /usr/bin/gdomain
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping galed"
+	start-stop-daemon --stop -u gale -x /usr/bin/gdomain
+	start-stop-daemon --stop -u gale -x /usr/bin/galed
+	eend $?
+}

@@ -11,7 +11,7 @@ SRC_URI="http://download.ofb.net/gale/${MY_P}.tar.bz2"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="amd64"
 IUSE="adns"
 
 DEPEND="
@@ -28,6 +28,7 @@ src_configure() {
 
 src_install() {
 	emake DESTDIR="${D}" install || die
+	newinitd "${FILESDIR}"/${PN}.init gale || die
 }
 
 pkg_postinst() {
