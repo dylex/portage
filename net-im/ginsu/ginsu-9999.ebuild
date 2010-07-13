@@ -4,8 +4,8 @@ inherit darcs autotools
 
 DESCRIPTION="Ginsu Gale Chat Client"
 HOMEPAGE="http://repetae.net/john/computer/ginsu/"
-EDARCS_REPOSITORY="/usr/local/src/ginsu"
-EDARCS_REPOSITORY_BASE="http://repetae.net/john/repos/ginsu"
+EDARCS_REPOSITORY="/usr/local/src/${PN}"
+EDARCS_REPOSITORY_BASE="http://repetae.net/john/repos"
 EDARCS_TOP_DIR="${WORKDIR}/darcs-src"
 
 LICENSE="MIT"

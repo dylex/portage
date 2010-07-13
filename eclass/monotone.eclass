@@ -110,6 +110,9 @@ monotone_fetch () {
 		shift
 	else	db=${1:-"${EMTN_DB}"}
 	fi
+	if test -f "${repo_uri#file:}" ; then
+		db_full="${repo_uri#file:}"
+	else
 	test -d "${EMTN_STORE_DIR}" || ( \
 			addwrite /
 			mkdir -p -- "/${EMTN_STORE_DIR}"
@@ -131,6 +134,7 @@ monotone_fetch () {
 	)
 	fi	|| die "Could not fetch/update ${db}"
 	db_full="${EMTN_STORE_DIR}/${db}"
+	fi
 	einfo "Copying database ${db_full} ..."
 	test -d "${S}" || mkdir -p -- "${S}" || die "mkdir ${S} failed"
 	cd -- "${S}" >/dev/null
