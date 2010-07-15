@@ -1,0 +1,4 @@
+post_src_unpack() {
+	cd "${S}"
+	epatch_user
+}
