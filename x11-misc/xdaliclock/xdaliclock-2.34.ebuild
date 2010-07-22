@@ -7,7 +7,7 @@ EAPI=3
 DESCRIPTION="Dali Clock is a digital clock. When a digit changes, it melts into its new shape."
 HOMEPAGE="http://www.jwz.org/xdaliclock"
 #SRC_URI="http://www.jwz.org/${PN}/${P}.tar.gz"
-EGIT_REPO_URI="file:///usr/local/src/xdaliclock"
+EGIT_REPO_URI="file:///usr/local/src/${PN}"
 EGIT_BRANCH="${PV}"
 EGIT_STORE_DIR="${WORKDIR}/git-src"
 
