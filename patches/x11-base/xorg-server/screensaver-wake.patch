@@ -1,0 +1,18 @@
+--- mi/mieq.c	2009/11/04 16:25:50	1.1
++++ mi/mieq.c	2010/04/25 19:18:17
+@@ -458,6 +458,7 @@
+ 
+         master  = (dev && !IsMaster(dev) && dev->u.master) ? dev->u.master : NULL;
+ 
++	if (event->any.type == ET_KeyPress || event->any.type == ET_ButtonPress) {
+         if (screenIsSaved == SCREEN_SAVER_ON)
+             dixSaveScreens (serverClient, SCREEN_SAVER_OFF, ScreenSaverReset);
+ #ifdef DPMSExtension
+@@ -467,6 +468,7 @@
+         if (DPMSPowerLevel != DPMSModeOn)
+             DPMSSet(serverClient, DPMSModeOn);
+ #endif
++	}
+ 
+         mieqProcessDeviceEvent(dev, event, screen);
+ 
