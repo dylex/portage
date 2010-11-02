@@ -1,14 +1,9 @@
-changeset:   5428:d8bf0c2cfab0
-branch:      HEAD
-tag:         tip
-user:        dylan@datura.dylex.net
-date:        Thu Jul 15 15:48:08 2010 -0400
-summary:     Add new status sort method
-
-diff -r 6b13e8319c1f -r d8bf0c2cfab0 init.h
---- a/init.h	Fri Jul 09 11:07:18 2010 -0700
-+++ b/init.h	Thu Jul 15 15:48:08 2010 -0400
-@@ -3368,6 +3368,7 @@
+diff -r 1a4c43138685 -r 1da47dc5f10c init.h
+--- a/init.h	Fri Oct 01 07:14:24 2010 -0700
++++ b/init.h	Sun Aug 01 19:04:03 2010 -0400
+@@ -3401,10 +3401,11 @@
+   { "size",		SORT_SIZE },
+   { "threads",		SORT_THREADS },
    { "to",		SORT_TO },
    { "score",		SORT_SCORE },
    { "spam",		SORT_SPAM },
@@ -16,7 +11,11 @@ diff -r 6b13e8319c1f -r d8bf0c2cfab0 init.h
    { NULL,               0 }
  };
  
-@@ -3387,6 +3388,7 @@
+ /* same as SortMethods, but with "threads" replaced by "date" */
+ 
+@@ -3420,10 +3421,11 @@
+ 					 * isn't possible.
+ 					 */
    { "to",		SORT_TO },
    { "score",		SORT_SCORE },
    { "spam",		SORT_SPAM },
@@ -24,10 +23,14 @@ diff -r 6b13e8319c1f -r d8bf0c2cfab0 init.h
    { NULL,               0 }
  };
  
-diff -r 6b13e8319c1f -r d8bf0c2cfab0 sort.c
---- a/sort.c	Fri Jul 09 11:07:18 2010 -0700
-+++ b/sort.c	Thu Jul 15 15:48:08 2010 -0400
-@@ -210,6 +210,20 @@
+ 
+ const struct mapping_t SortBrowserMethods[] = {
+diff -r 1a4c43138685 -r 1da47dc5f10c sort.c
+--- a/sort.c	Fri Oct 01 07:14:24 2010 -0700
++++ b/sort.c	Sun Aug 01 19:04:03 2010 -0400
+@@ -208,10 +208,24 @@
+   }
+ 
    return (SORTCODE(result));
  }
  
@@ -37,10 +40,10 @@ diff -r 6b13e8319c1f -r d8bf0c2cfab0 sort.c
 +  HEADER **pb = (HEADER **) b;
 +  int result = 0;
 +  if (!result) result = (*pb)->deleted - (*pa)->deleted;
-+  if (!result) result = (*pa)->flagged - (*pb)->flagged;
-+  if (!result) result = (*pb)->replied - (*pa)->replied;
 +  if (!result) result = (*pb)->old - (*pa)->old;
 +  if (!result) result = (*pb)->read - (*pa)->read;
++  if (!result) result = (*pa)->flagged - (*pb)->flagged;
++  if (!result) result = (*pb)->replied - (*pa)->replied;
 +  AUXSORT(result,a,b);
 +  return (SORTCODE(result));
 +}
@@ -48,7 +51,11 @@ diff -r 6b13e8319c1f -r d8bf0c2cfab0 sort.c
  sort_t *mutt_get_sort_func (int method)
  {
    switch (method & SORT_MASK)
-@@ -232,6 +246,8 @@
+   {
+     case SORT_RECEIVED:
+@@ -230,10 +244,12 @@
+       return (compare_to);
+     case SORT_SCORE:
        return (compare_score);
      case SORT_SPAM:
        return (compare_spam);
@@ -57,10 +64,14 @@ diff -r 6b13e8319c1f -r d8bf0c2cfab0 sort.c
      default:
        return (NULL);
    }
-diff -r 6b13e8319c1f -r d8bf0c2cfab0 sort.h
---- a/sort.h	Fri Jul 09 11:07:18 2010 -0700
-+++ b/sort.h	Thu Jul 15 15:48:08 2010 -0400
-@@ -31,6 +31,7 @@
+   /* not reached */
+ }
+diff -r 1a4c43138685 -r 1da47dc5f10c sort.h
+--- a/sort.h	Fri Oct 01 07:14:24 2010 -0700
++++ b/sort.h	Sun Aug 01 19:04:03 2010 -0400
+@@ -29,10 +29,11 @@
+ #define SORT_ALIAS	10
+ #define SORT_ADDRESS	11
  #define SORT_KEYID	12
  #define SORT_TRUST	13
  #define SORT_SPAM	14
@@ -68,4 +79,5 @@ diff -r 6b13e8319c1f -r d8bf0c2cfab0 sort.h
  /* dgc: Sort & SortAux are shorts, so I'm bumping these bitflags up from
   * bits 4 & 5 to bits 8 & 9 to make room for more sort keys in the future. */
  #define SORT_MASK	0xff
-
+ #define SORT_REVERSE	(1<<8)
+ #define SORT_LAST	(1<<9)
