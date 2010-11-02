@@ -1,0 +1,55 @@
+--- ip4r.sql.in.orig	2009-06-29 11:17:54.000000000 -0400
++++ ip4r.sql.in	2010-11-01 21:58:51.000000000 -0400
+@@ -305,6 +305,16 @@
+ AS 'MODULE_PATHNAME'
+ LANGUAGE 'C' IMMUTABLE STRICT;
+ 
++CREATE OR REPLACE FUNCTION ip4_min(ip4, ip4)
++RETURNS ip4
++AS 'SELECT CASE WHEN ip4_le($1, $2) THEN $1 ELSE $2 END'
++LANGUAGE 'SQL' IMMUTABLE;
++
++CREATE OR REPLACE FUNCTION ip4_max(ip4, ip4)
++RETURNS ip4
++AS 'SELECT CASE WHEN ip4_ge($1, $2) THEN $1 ELSE $2 END'
++LANGUAGE 'SQL' IMMUTABLE;
++
+ -- Comparison methods for ip4r
+ 
+ CREATE OR REPLACE FUNCTION ip4r_cmp(ip4r, ip4r)
+@@ -418,6 +428,21 @@
+ AS 'MODULE_PATHNAME'
+ LANGUAGE 'C' IMMUTABLE STRICT;
+ 
++CREATE OR REPLACE FUNCTION ip4r_subnets(ip4r)
++RETURNS ip4r[]
++AS 'MODULE_PATHNAME'
++LANGUAGE 'C' IMMUTABLE STRICT;
++
++CREATE OR REPLACE FUNCTION ip4r_min(ip4r, ip4r)
++RETURNS ip4r
++AS 'SELECT CASE WHEN ip4r_le($1, $2) THEN $1 ELSE $2 END'
++LANGUAGE 'SQL' IMMUTABLE STRICT;
++
++CREATE OR REPLACE FUNCTION ip4r_max(ip4r, ip4r)
++RETURNS ip4r
++AS 'SELECT CASE WHEN ip4r_ge($1, $2) THEN $1 ELSE $2 END'
++LANGUAGE 'SQL' IMMUTABLE STRICT;
++
+ --
+ -- OPERATORS for ip4 only
+ --
+@@ -734,6 +759,13 @@
+ --);
+ --
+ 
++-- aggregates
++
++CREATE AGGREGATE min (ip4) (SFUNC = ip4_min, STYPE = ip4);
++CREATE AGGREGATE max (ip4) (SFUNC = ip4_max, STYPE = ip4);
++CREATE AGGREGATE min (ip4r) (SFUNC = ip4r_min, STYPE = ip4r);
++CREATE AGGREGATE max (ip4r) (SFUNC = ip4r_max, STYPE = ip4r);
++CREATE AGGREGATE union (ip4r) (SFUNC = ip4r_union, STYPE = ip4r);
+ 
+ -- define the GiST support methods
+ 

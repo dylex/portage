@@ -1,0 +1,60 @@
+--- ip4r.c.orig	2010-03-14 05:55:11.000000000 -0400
++++ ip4r.c	2010-11-01 21:47:23.000000000 -0400
+@@ -68,6 +68,7 @@
+ #include "utils/palloc.h"
+ #include "utils/builtins.h"
+ #include "utils/inet.h"
++#include "utils/array.h"
+ #include <sys/socket.h>
+ #include <math.h>
+ 
+@@ -580,6 +581,7 @@
+ Datum ip4r_union(PG_FUNCTION_ARGS);
+ Datum ip4r_inter(PG_FUNCTION_ARGS);
+ Datum ip4r_size(PG_FUNCTION_ARGS);
++Datum ip4r_subnets(PG_FUNCTION_ARGS);
+ Datum ip4r_cmp(PG_FUNCTION_ARGS);
+ Datum ip4_cmp(PG_FUNCTION_ARGS);
+ Datum ip4r_left_of(PG_FUNCTION_ARGS);
+@@ -1443,6 +1445,41 @@
+     PG_RETURN_FLOAT8(size);
+ }
+ 
++PG_FUNCTION_INFO_V1(ip4r_subnets);
++Datum
++ip4r_subnets(PG_FUNCTION_ARGS)
++{
++    IP4R *arg = PG_GETARG_IP4R_P(0);
++    IP4R r;
++    Oid ip4rtoid = get_fn_expr_argtype(fcinfo->flinfo, 0); /* is there a better way? */
++    ArrayBuildState *s = NULL;
++    if (!arg)
++        PG_RETURN_NULL();
++    r = *arg;
++
++    while (r.lower <= r.upper)
++    {
++	IP4R *p = (IP4R *)palloc(sizeof(IP4R));
++	IP4R n = { r.lower, r.lower };
++	uint32 b;
++	/* fls would make this faster */
++	for (b = 1; b && !(n.lower & b) && (n.upper | b) <= r.upper; b <<= 1)
++	    n.upper |= b;
++
++	*p = n;
++	s = accumArrayResult(s, IP4RPGetDatum(p), false, ip4rtoid, CurrentMemoryContext);
++
++	if (n.upper == ~0)
++	    break;
++	r.lower = n.upper + 1;
++    }
++
++    if (s)
++        PG_RETURN_ARRAYTYPE_P(makeArrayResult(s, CurrentMemoryContext));
++    else
++	PG_RETURN_NULL();
++}
++
+ 
+ /*****************************************************************************
+  *						   Btree functions
