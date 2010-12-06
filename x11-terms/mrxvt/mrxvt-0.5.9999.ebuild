@@ -11,7 +11,7 @@ SLOT="0"
 KEYWORDS="~amd64"
 
 LINGUAS_IUSE="linguas_el linguas_ja linguas_ko linguas_th linguas_zh_CN linguas_zh_TW"
-IUSE="debug png jpeg session truetype menubar utempter xpm ${LINGUAS_IUSE} minimal 256color"
+IUSE="debug png jpeg session truetype menubar utempter xpm ${LINGUAS_IUSE} minimal 256color tabs"
 
 RDEPEND="png? ( media-libs/libpng )
 	utempter? ( sys-libs/libutempter )
@@ -80,6 +80,7 @@ src_configure() {
 		$(use_enable utempter) \
 		$(use_enable menubar) \
 		$(use_enable 256color 256colors) \
+		$(use_enable tabs tabs) \
 		--with-term ${RXVT_TERM:-mrxvt} \
 		${myconf}
 }
