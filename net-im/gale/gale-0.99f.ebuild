@@ -22,6 +22,10 @@ RDEPEND="${DEPEND}"
 
 S=${WORKDIR}/${MY_P}
 
+src_prepare() {
+	sed -i '/(PROG_LDCONFIG)/d' Makefile.am Makefile.in liboop/Makefile.am liboop/Makefile.in
+}
+
 src_configure() {
 	econf $(use_enable adns)
 }
