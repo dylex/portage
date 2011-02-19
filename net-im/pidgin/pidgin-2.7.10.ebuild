@@ -1,26 +1,22 @@
 # Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/net-im/pidgin/pidgin-2.7.9.ebuild,v 1.8 2011/01/10 13:25:53 xarthisius Exp $
+# $Header: /var/cvsroot/gentoo-x86/net-im/pidgin/pidgin-2.7.10.ebuild,v 1.7 2011/02/14 20:41:50 jer Exp $
 
 EAPI=2
 
 GENTOO_DEPEND_ON_PERL=no
-inherit flag-o-matic eutils toolchain-funcs multilib perl-app gnome2 python autotools monotone
+inherit flag-o-matic eutils toolchain-funcs multilib perl-app gnome2 python autotools base
 
 DESCRIPTION="GTK Instant Messenger client"
 HOMEPAGE="http://pidgin.im/"
-SRC_URI=""
-EMTN_REPO_URI="file:///usr/local/src/${PN}.mtn"
-EMTN_STORE_DIR="${WORKDIR}/mtn-src"
-EMTN_MODULEPATH="dylex"
-EMTN_MODULEDIR="."
+SRC_URI="mirror://sourceforge/${PN}/${P}.tar.bz2"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="alpha amd64 ~arm hppa ia64 ppc ppc64 sparc x86"
 IUSE="dbus debug doc eds gadu gnutls +gstreamer +gtk idn meanwhile"
 IUSE+=" networkmanager nls perl silc tcl tk spell qq sasl +startup-notification"
-IUSE+=" ncurses groupwise prediction python +xscreensaver zephyr zeroconf" # mono"
+IUSE+=" ncurses groupwise prediction python X +xscreensaver zephyr zeroconf" # mono"
 IUSE+=" +irc +jabber +oscar +yahoo +simple +msn +myspace"
 
 # dbus requires python to generate C code for dbus bindings (thus DEPEND only).
@@ -128,7 +124,9 @@ pkg_setup() {
 }
 
 src_prepare() {
+	base_src_prepare
 	gnome2_src_prepare
+	mkdir m4
 	eautoreconf
 }
 
@@ -202,10 +200,11 @@ src_configure() {
 		$(use_enable networkmanager nm) \
 		$(use_enable zeroconf avahi) \
 		$(use_enable idn) \
+		$(use_with X x) \
 		--with-system-ssl-certs="/etc/ssl/certs/" \
 		--with-dynamic-prpls="${DYNAMIC_PRPLS}" \
 		--disable-mono \
-		--x-includes=/usr/include/X11 \
+		$(use X && echo "--x-includes=/usr/include/X11") \
 		${myconf}
 		#$(use_enable mono) \
 }
