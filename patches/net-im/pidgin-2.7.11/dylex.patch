@@ -1,5 +1,5 @@
 #
-# old_revision [8b9cc64559d1bee0776f9a188fab4db115e309f4]
+# old_revision [266042fff48838ac6672bcde8cf02babb5d5bae0]
 #
 # add_file "finch/gntimhtml.c"
 #  content [ff1312c09d7ffe1a2114ad05a1bb85f3dfb83c57]
@@ -21,8 +21,8 @@
 #    to [514679b613db787bb1858ceb413f5d5c684dd9fb]
 # 
 # patch "configure.ac"
-#  from [39f6d728bc568ddc2013141ebbaaf54c24f16beb]
-#    to [df51262912edd84032e2c9fcbb7cb38a7558a86a]
+#  from [077bc5af5937d886bbb30cf73c2a2590f40406a5]
+#    to [f0604d40159911534f4f5ce736938b4fc8e30c3a]
 # 
 # patch "finch/Makefile.am"
 #  from [059853f082e9aff96218119a09d9e0bf75137cff]
@@ -93,8 +93,8 @@
 #    to [ba77e27e9a1281f63bf44b7ed6ca81e94490e962]
 # 
 # patch "libpurple/conversation.c"
-#  from [292bafeeae0e74e5a4235a58322c44c563150d6d]
-#    to [44069311c718583f8164b4df9f5e9cdc39117bf7]
+#  from [759e1dc1b93f2276d52dd058d5b5c205941ac78e]
+#    to [e5b7c4a0ed0037146dd3d5f0c30e02c6e479b9b6]
 # 
 # patch "libpurple/log.c"
 #  from [d44c76dbd3a39f8d4b783ef535eb06c60f0368de]
@@ -124,8 +124,8 @@
 +
 +ACLOCAL_AMFLAGS = -I m4
 ============================================================
---- libpurple/conversation.c	292bafeeae0e74e5a4235a58322c44c563150d6d
-+++ libpurple/conversation.c	44069311c718583f8164b4df9f5e9cdc39117bf7
+--- libpurple/conversation.c	759e1dc1b93f2276d52dd058d5b5c205941ac78e
++++ libpurple/conversation.c	e5b7c4a0ed0037146dd3d5f0c30e02c6e479b9b6
 @@ -885,6 +885,7 @@ purple_find_conversation_with_account(Pu
  	switch (type) {
  		case PURPLE_CONV_TYPE_IM:
@@ -135,9 +135,9 @@
  			break;
  		case PURPLE_CONV_TYPE_ANY:
 ============================================================
---- configure.ac	39f6d728bc568ddc2013141ebbaaf54c24f16beb
-+++ configure.ac	df51262912edd84032e2c9fcbb7cb38a7558a86a
-@@ -268,62 +268,6 @@ AC_ARG_ENABLE(nls, AC_HELP_STRING([--dis
+--- configure.ac	077bc5af5937d886bbb30cf73c2a2590f40406a5
++++ configure.ac	f0604d40159911534f4f5ce736938b4fc8e30c3a
+@@ -293,36 +293,6 @@ AC_ARG_ENABLE(nls, AC_HELP_STRING([--dis
  dnl #######################################################################
  AC_ARG_ENABLE(nls, AC_HELP_STRING([--disable-nls], [disable installation of translation files]), enable_i18n="$enableval", enable_i18n=yes)
  
@@ -145,32 +145,6 @@
 -	AC_PROG_INTLTOOL
 -	GETTEXT_PACKAGE=pidgin
 -	AC_SUBST(GETTEXT_PACKAGE)
--
--
--	# before gettexting, in case iconv matters
--	case "$host_os" in
--	darwin*)
--		AC_CHECK_LIB(resolv, res_query)
--
--		AC_CHECK_HEADER(CoreFoundation/CoreFoundation.h, [
--			AC_CHECK_HEADER(IOKit/IOKitLib.h, [
--				AC_DEFINE(HAVE_IOKIT, 1, [Define if we have IOKit])
--				LIBS="$LIBS -framework IOKit -framework CoreFoundation"
--			], [])
--		], [])
--
--		AC_MSG_CHECKING([for fink])
--		if test -d /sw; then
--			AC_MSG_RESULT([found, adding /sw to search paths])
--			CPPFLAGS="$CPPFLAGS -I/sw/include"
--			LDFLAGS="$LDFLAGS -L/sw/lib"
--		else
--			AC_MSG_RESULT([not found])
--		fi
--		;;
--	*)
--		;;
--	esac
 -
 -	ALL_LINGUAS="af am ar az be@latin bg bn bn_IN bs ca ca@valencia cs da de dz el en_AU en_CA en_GB eo es et eu fa fi fr ga gl gu he hi hu hy id it ja ka km kn ko ku lo lt mai mhr mk mn mr ms_MY my_MM nb ne nl nn oc or pa pl pt_BR pt ps ro ru si sk sl sq sr sr@latin sv sw ta te th tr uk ur vi xh zh_CN zh_HK zh_TW"
 -	AM_GLIB_GNU_GETTEXT
@@ -200,7 +174,7 @@
  AM_CONDITIONAL(INSTALL_I18N, test "x$enable_i18n" = "xyes")
  
  dnl #######################################################################
-@@ -1429,7 +1373,7 @@ if test "x$enable_dbus" = "xyes" || test
+@@ -1407,7 +1377,7 @@ if test "x$enable_dbus" = "xyes" || test
  
  if test "x$enable_dbus" = "xyes" || test "x$enable_consoleui" = "xyes" ; then
  	if test -z "$PYTHON" -o "x$PYTHON" = "xyes"; then

@@ -1,6 +1,6 @@
 # Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/net-im/pidgin/pidgin-2.7.10.ebuild,v 1.7 2011/02/14 20:41:50 jer Exp $
+# $Header: /var/cvsroot/gentoo-x86/net-im/pidgin/pidgin-2.7.11.ebuild,v 1.9 2011/04/15 08:01:55 pva Exp $
 
 EAPI=2
 
@@ -15,8 +15,8 @@ LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="alpha amd64 ~arm hppa ia64 ppc ppc64 sparc x86"
 IUSE="dbus debug doc eds gadu gnutls +gstreamer +gtk idn meanwhile"
-IUSE+=" networkmanager nls perl silc tcl tk spell qq sasl +startup-notification"
-IUSE+=" ncurses groupwise prediction python X +xscreensaver zephyr zeroconf" # mono"
+IUSE+=" networkmanager nls perl silc tcl tk spell qq sasl ncurses"
+IUSE+=" groupwise prediction python X +xscreensaver zephyr zeroconf" # mono"
 IUSE+=" +irc +jabber +oscar +yahoo +simple +msn +myspace"
 
 # dbus requires python to generate C code for dbus bindings (thus DEPEND only).
@@ -35,7 +35,6 @@ RDEPEND="
 		>=x11-libs/gtk+-2.10:2
 		x11-libs/libSM
 		xscreensaver? ( x11-libs/libXScrnSaver )
-		startup-notification? ( >=x11-libs/startup-notification-0.5 )
 		spell? ( >=app-text/gtkspell-2.0.2 )
 		eds? ( gnome-extra/evolution-data-server )
 		prediction? ( >=dev-db/sqlite-3.3:3 ) )
@@ -49,7 +48,8 @@ RDEPEND="
 		>=sys-apps/dbus-0.90
 		dev-python/dbus-python )
 	perl? ( >=dev-lang/perl-5.8.2-r1[-build] )
-	gadu?  ( >=net-libs/libgadu-1.9.0[-ssl] )
+	gadu? ( || ( >=net-libs/libgadu-1.10.1[ssl,gnutls]
+		net-libs/libgadu[-ssl] ) )
 	gnutls? ( net-libs/gnutls )
 	!gnutls? ( >=dev-libs/nss-3.11 )
 	meanwhile? ( net-libs/meanwhile )
@@ -181,7 +181,6 @@ src_configure() {
 		$(use_enable gtk sm) \
 		$(use gtk || use_enable nls) \
 		$(use gtk && echo "--enable-nls") \
-		$(use gtk && use_enable startup-notification) \
 		$(use gtk && use_enable xscreensaver screensaver) \
 		$(use gtk && use_enable prediction cap) \
 		$(use gtk && use_enable eds gevolution) \
