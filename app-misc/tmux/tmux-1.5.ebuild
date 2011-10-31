@@ -74,4 +74,6 @@ src_install() {
 		insinto /usr/share/vim/vimfiles/ftdetect
 		doins "${FILESDIR}"/tmux.vim
 	fi
+
+	use X && tic -s -o "${D}"/usr/share/terminfo examples/xtmux.terminfo
 }
