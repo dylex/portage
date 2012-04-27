@@ -5,7 +5,7 @@ inherit darcs haskell-cabal
 
 DESCRIPTION="Multi-file, colored, filtered log tailer"
 HOMEPAGE="https://dylex.net:9947/src"
-EDARCS_REPOSITORY="/usr/local/src/${PN}"
+EDARCS_REPOSITORY="http://dylex.net/src/${PN}"
 EDARCS_TOP_DIR="${WORKDIR}/darcs-src"
 
 LICENSE="BSD"
