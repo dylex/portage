@@ -13,7 +13,7 @@ EGIT_REPO_URI="git://gitslave.git.sourceforge.net/gitroot/gitslave/gitslave"
 
 LICENSE="LGPL-2.1-fixed"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS=""
 IUSE="progressbar parallel"
 
 DEPEND="dev-lang/perl"
