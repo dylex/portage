@@ -1,0 +1,71 @@
+# HG changeset patch
+# User Dylan Simon <dylan@dylex.net>
+# Date 1280703843 14400
+# Branch gentoo-1.5.21
+# Node ID 444a5585e060e0347e0af63da859edbb5e122d14
+# Parent  c788fd91d3e331298c6a400e97ffa946fa16d498
+Add status sort method
+
+diff -r c788fd91d3e3 -r 444a5585e060 init.h
+--- a/init.h	Sun Jun 03 18:59:12 2012 -0400
++++ b/init.h	Sun Aug 01 19:04:03 2010 -0400
+@@ -3655,6 +3655,7 @@
+   { "to",		SORT_TO },
+   { "score",		SORT_SCORE },
+   { "spam",		SORT_SPAM },
++  { "status",		SORT_STATUS },
+   { NULL,               0 }
+ };
+ 
+@@ -3674,6 +3675,7 @@
+   { "to",		SORT_TO },
+   { "score",		SORT_SCORE },
+   { "spam",		SORT_SPAM },
++  { "status",		SORT_STATUS },
+   { NULL,               0 }
+ };
+ 
+diff -r c788fd91d3e3 -r 444a5585e060 sort.c
+--- a/sort.c	Sun Jun 03 18:59:12 2012 -0400
++++ b/sort.c	Sun Aug 01 19:04:03 2010 -0400
+@@ -219,6 +219,20 @@
+   return (SORTCODE(result));
+ }
+ 
++static int compare_status (const void *a, const void *b)
++{
++  HEADER **pa = (HEADER **) a;
++  HEADER **pb = (HEADER **) b;
++  int result = 0;
++  if (!result) result = (*pb)->deleted - (*pa)->deleted;
++  if (!result) result = (*pb)->old - (*pa)->old;
++  if (!result) result = (*pb)->read - (*pa)->read;
++  if (!result) result = (*pa)->flagged - (*pb)->flagged;
++  if (!result) result = (*pb)->replied - (*pa)->replied;
++  AUXSORT(result,a,b);
++  return (SORTCODE(result));
++}
++
+ sort_t *mutt_get_sort_func (int method)
+ {
+   switch (method & SORT_MASK)
+@@ -241,6 +255,8 @@
+       return (compare_score);
+     case SORT_SPAM:
+       return (compare_spam);
++    case SORT_STATUS:
++      return (compare_status);
+     default:
+       return (NULL);
+   }
+diff -r c788fd91d3e3 -r 444a5585e060 sort.h
+--- a/sort.h	Sun Jun 03 18:59:12 2012 -0400
++++ b/sort.h	Sun Aug 01 19:04:03 2010 -0400
+@@ -31,6 +31,7 @@
+ #define SORT_KEYID	12
+ #define SORT_TRUST	13
+ #define SORT_SPAM	14
++#define SORT_STATUS	15
+ /* dgc: Sort & SortAux are shorts, so I'm bumping these bitflags up from
+  * bits 4 & 5 to bits 8 & 9 to make room for more sort keys in the future. */
+ #define SORT_MASK	0xff
