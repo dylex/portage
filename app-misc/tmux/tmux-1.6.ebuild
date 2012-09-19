@@ -9,12 +9,12 @@ inherit eutils autotools git-2
 DESCRIPTION="Terminal multiplexer"
 HOMEPAGE="http://tmux.sourceforge.net"
 
+EGIT_REPO_URI=${EGIT_REPO_URI:-"https://github.com/dylex/xtmux.git"}
+EGIT_NOUNPACK=1
 if use X ; then
-	EGIT_REPO_URI=${EGIT_REPO_URI:-"git://github.com/dylex/xtmux.git"}
 	EGIT_BRANCH="${PV}"
-	EGIT_NOUNPACK=1
 else
-SRC_URI="mirror://sourceforge/tmux/${P}.tar.gz"
+    EGIT_BRANCH="nox/${PV}"
 fi
 
 LICENSE="ISC"
