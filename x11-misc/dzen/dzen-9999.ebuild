@@ -19,7 +19,8 @@ IUSE="minimal xinerama xpm"
 
 RDEPEND="x11-libs/libX11
 	xinerama? ( x11-libs/libXinerama )
-	xpm? ( x11-libs/libXpm )"
+	xpm? ( x11-libs/libXpm )
+	x11-libs/libXft"
 DEPEND="${RDEPEND}
 	xinerama? ( x11-proto/xineramaproto )"
 
