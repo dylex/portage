@@ -1,10 +1,12 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/app-misc/tmux/tmux-1.7.ebuild,v 1.1 2012/10/13 17:18:59 radhermit Exp $
+# $Header: /var/cvsroot/gentoo-x86/app-misc/tmux/tmux-1.7-r3.ebuild,v 1.1 2013/02/13 09:35:36 jlec Exp $
 
-EAPI=4
+EAPI=5
 
-inherit eutils autotools git-2
+AUTOTOOLS_AUTORECONF=true
+
+inherit autotools-utils flag-o-matic git-2
 
 DESCRIPTION="Terminal multiplexer"
 HOMEPAGE="http://tmux.sourceforge.net"
@@ -19,7 +21,7 @@ fi
 
 LICENSE="ISC"
 SLOT="0"
-KEYWORDS="~amd64 ~arm ~mips ~ppc ~ppc64 ~x86 ~amd64-fbsd ~x86-fbsd ~x64-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos"
+KEYWORDS="~amd64 ~amd64-linux"
 IUSE="X vim-syntax"
 
 COMMON_DEPEND="
@@ -52,15 +54,16 @@ pkg_setup() {
 }
 
 src_prepare() {
-	eautoreconf
 	# look for config file in the prefix
 	sed -i -e '/SYSTEM_CFG/s:"/etc:"'"${EPREFIX}"'/etc:' tmux.h || die
 	# and don't just add some includes
-	sed -i -e 's:-I/usr/local/include::' Makefile.in || die
+	sed -i -e 's:-I/usr/local/include::' Makefile.am || die
+
+	autotools-utils_src_prepare
 }
 
 src_install() {
-	default
+	autotools-utils_src_install
 
 	docinto examples
 	dodoc examples/*.conf
