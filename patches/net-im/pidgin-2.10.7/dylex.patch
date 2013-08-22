@@ -1,6 +1,6 @@
-diff -r 4992bd90d8ad -r 7d10911a27d0 Makefile.am
---- a/Makefile.am	Fri Jul 06 08:05:14 2012 -0700
-+++ b/Makefile.am	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 Makefile.am
+--- a/Makefile.am	Mon Feb 11 01:13:50 2013 -0800
++++ b/Makefile.am	Thu Feb 14 21:05:39 2013 -0500
 @@ -1,4 +1,4 @@
 -EXTRA_DIST = \
 +EXTRA_DIST = config.rpath  \
@@ -13,9 +13,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 Makefile.am
  			intltool-merge intltool-update
 +
 +ACLOCAL_AMFLAGS = -I m4
-diff -r 4992bd90d8ad -r 7d10911a27d0 configure.ac
---- a/configure.ac	Fri Jul 06 08:05:14 2012 -0700
-+++ b/configure.ac	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 configure.ac
+--- a/configure.ac	Mon Feb 11 01:13:50 2013 -0800
++++ b/configure.ac	Thu Feb 14 21:05:39 2013 -0500
 @@ -1413,7 +1413,7 @@
  
  if test "x$enable_dbus" = "xyes" || test "x$enable_consoleui" = "xyes" ; then
@@ -25,9 +25,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 configure.ac
  	fi
  
  	if test x"$PYTHON" = x"no" ; then
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/Makefile.am
---- a/finch/Makefile.am	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/Makefile.am	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/Makefile.am
+--- a/finch/Makefile.am	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/Makefile.am	Thu Feb 14 21:05:39 2013 -0500
 @@ -25,6 +25,7 @@
  	gntft.c \
  	finch.c \
@@ -44,9 +44,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/Makefile.am
  	gntlog.h \
  	gntmedia.h \
  	gntnotify.h \
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntblist.c
---- a/finch/gntblist.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/gntblist.c	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/gntblist.c
+--- a/finch/gntblist.c	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/gntblist.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -1322,6 +1322,13 @@
  }
  
@@ -141,9 +141,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntblist.c
  	item = gnt_menuitem_new(_("Join Chat..."));
  	gnt_menuitem_set_id(GNT_MENU_ITEM(item), "join-chat");
  	gnt_menu_add_item(GNT_MENU(sub), item);
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntconv.c
---- a/finch/gntconv.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/gntconv.c	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/gntconv.c
+--- a/finch/gntconv.c	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/gntconv.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -44,6 +44,7 @@
  #include "gntrequest.h"
  #include "gntsound.h"
@@ -195,9 +195,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntconv.c
  
  	if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM &&
  			purple_conv_im_get_typing_state(PURPLE_CONV_IM(conv)) == PURPLE_TYPING) {
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntimhtml.c
+diff -r ad7e7fb98db3 finch/gntimhtml.c
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/finch/gntimhtml.c	Thu Feb 07 11:48:08 2013 -0500
++++ b/finch/gntimhtml.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -0,0 +1,477 @@
 +/*
 +* @file gntimhtml.c GNT IMHtml
@@ -676,9 +676,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntimhtml.c
 +		g_free(ws);
 +}
 +
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntimhtml.h
+diff -r ad7e7fb98db3 finch/gntimhtml.h
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/finch/gntimhtml.h	Thu Feb 07 11:48:08 2013 -0500
++++ b/finch/gntimhtml.h	Thu Feb 14 21:05:39 2013 -0500
 @@ -0,0 +1,48 @@
 +/**
 + * @file gntimhtml.h GNT IM/HTML rendering component
@@ -728,9 +728,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntimhtml.h
 +/*@}*/
 +
 +#endif /* _GNT_IMHTML_H */
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntnotify.c
---- a/finch/gntnotify.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/gntnotify.c	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/gntnotify.c
+--- a/finch/gntnotify.c	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/gntnotify.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -96,7 +96,7 @@
  			switch (type) {
  				case PURPLE_NOTIFY_FORMATTED:
@@ -749,9 +749,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntnotify.c
  			gnt_text_view_append_text_with_flags(msg, strip, GNT_TEXT_FLAG_NORMAL);
  		gnt_text_view_scroll(msg, 0);
  		gnt_util_get_text_bound(strip, &ntvw, &ntvh);
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntprefs.c
---- a/finch/gntprefs.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/gntprefs.c	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/gntprefs.c
+--- a/finch/gntprefs.c	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/gntprefs.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -53,11 +53,11 @@
  
  	purple_prefs_add_none("/finch/conversations");
@@ -773,9 +773,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntprefs.c
  	{PURPLE_PREF_BOOLEAN, "/finch/conversations/notify_typing", N_("Notify buddies when you are typing"), NULL},
  	{PURPLE_PREF_NONE, NULL, NULL, NULL}
  };
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/Makefile.am
---- a/finch/libgnt/Makefile.am	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/Makefile.am	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/libgnt/Makefile.am
+--- a/finch/libgnt/Makefile.am	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/libgnt/Makefile.am	Thu Feb 14 21:05:39 2013 -0500
 @@ -10,8 +10,8 @@
  
  BUILT_SOURCES = gntmarshal.h
@@ -802,9 +802,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/Makefile.am
  libgnt_lainclude_HEADERS = \
  	$(libgnt_la_headers)
  
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.c
---- a/finch/libgnt/gntcolors.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntcolors.c	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/libgnt/gntcolors.c
+--- a/finch/libgnt/gntcolors.c	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/libgnt/gntcolors.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -38,22 +38,26 @@
  #include <string.h>
  
@@ -1011,9 +1011,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.c
  	init_pair(custom_type, fg, bg);
  	return custom_type++;
  }
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.h
---- a/finch/libgnt/gntcolors.h	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntcolors.h	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/libgnt/gntcolors.h
+--- a/finch/libgnt/gntcolors.h	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/libgnt/gntcolors.h	Thu Feb 14 21:05:39 2013 -0500
 @@ -34,7 +34,16 @@
   */
  typedef enum
@@ -1057,9 +1057,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.h
  int gnt_color_add_pair(int fg, int bg);
 +
  #endif
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gnttextview.c
---- a/finch/libgnt/gnttextview.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gnttextview.c	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/libgnt/gnttextview.c
+--- a/finch/libgnt/gnttextview.c	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/libgnt/gnttextview.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -74,6 +74,13 @@
  }
  
@@ -1143,9 +1143,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gnttextview.c
  		fl |= (A_DIM | gnt_color_pair(GNT_COLOR_HIGHLIGHT));
  	else if ((flags & A_COLOR) == 0)
  		fl |= gnt_color_pair(GNT_COLOR_NORMAL);
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.c
---- a/finch/libgnt/gntutils.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntutils.c	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/libgnt/gntutils.c
+--- a/finch/libgnt/gntutils.c	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/libgnt/gntutils.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -41,6 +41,7 @@
  #include <stdlib.h>
  #include <string.h>
@@ -1247,9 +1247,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.c
  	xmlFreeParserCtxt(ctxt);
  	return ret;
  #endif
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.h
---- a/finch/libgnt/gntutils.h	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntutils.h	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/libgnt/gntutils.h
+--- a/finch/libgnt/gntutils.h	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/libgnt/gntutils.h	Thu Feb 14 21:05:39 2013 -0500
 @@ -142,7 +142,7 @@
   *
   * @since 2.2.0
@@ -1259,9 +1259,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.h
  
  /**
   * Make some keypress activate a button when some key is pressed with 'wid' in focus.
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwidget.h
---- a/finch/libgnt/gntwidget.h	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntwidget.h	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/libgnt/gntwidget.h
+--- a/finch/libgnt/gntwidget.h	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/libgnt/gntwidget.h	Thu Feb 14 21:05:39 2013 -0500
 @@ -66,6 +66,7 @@
  	GNT_WIDGET_INVISIBLE      = 1 << 10,
  	GNT_WIDGET_TRANSIENT      = 1 << 11,
@@ -1278,9 +1278,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwidget.h
  
      void (*gnt_reserved1)(void);
      void (*gnt_reserved2)(void);
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
---- a/finch/libgnt/gntwm.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntwm.c	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/libgnt/gntwm.c
+--- a/finch/libgnt/gntwm.c	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/libgnt/gntwm.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -123,14 +123,20 @@
  }
  
@@ -1580,9 +1580,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	if (node == NULL) {
  		gnt_wm_new_window(wm, widget);
  	} else
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.h
---- a/finch/libgnt/gntwm.h	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntwm.h	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/libgnt/gntwm.h
+--- a/finch/libgnt/gntwm.h	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/libgnt/gntwm.h	Thu Feb 14 21:05:39 2013 -0500
 @@ -93,7 +93,7 @@
  		*windows,         /* Window-list window */
  		*actions;         /* Action-list window */
@@ -1592,9 +1592,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.h
  	GHashTable *name_places;    /* window name -> ws*/
  	GHashTable *title_places;    /* window title -> ws */
  
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.c
---- a/finch/libgnt/gntws.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntws.c	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/libgnt/gntws.c
+--- a/finch/libgnt/gntws.c	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/libgnt/gntws.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -30,10 +30,10 @@
  #include "gntws.h"
  
@@ -1696,9 +1696,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.c
  }
  
  GType
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.h
---- a/finch/libgnt/gntws.h	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntws.h	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/libgnt/gntws.h
+--- a/finch/libgnt/gntws.h	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/libgnt/gntws.h	Thu Feb 14 21:05:39 2013 -0500
 @@ -121,21 +121,19 @@
   * Hide a widget in a workspace.
   *
@@ -1741,9 +1741,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.h
  
  /**
   * Get the name of a workspace.
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/wms/Makefile.am
---- a/finch/libgnt/wms/Makefile.am	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/wms/Makefile.am	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 finch/libgnt/wms/Makefile.am
+--- a/finch/libgnt/wms/Makefile.am	Mon Feb 11 01:13:50 2013 -0800
++++ b/finch/libgnt/wms/Makefile.am	Thu Feb 14 21:05:39 2013 -0500
 @@ -1,13 +1,14 @@
  wms = irssi.la
  if PURPLE_AVAILABLE
@@ -1772,9 +1772,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/wms/Makefile.am
  s_la_SOURCES = s.c
  s_la_LIBADD =  \
    $(GLIB_LIBS) \
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/wms/full.c
+diff -r ad7e7fb98db3 finch/libgnt/wms/full.c
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/finch/libgnt/wms/full.c	Thu Feb 07 11:48:08 2013 -0500
++++ b/finch/libgnt/wms/full.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -0,0 +1,196 @@
 +#include <stdlib.h>
 +#include <string.h>
@@ -1972,9 +1972,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/wms/full.c
 +	return type;
 +}
 +
-diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/conversation.c
---- a/libpurple/conversation.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/libpurple/conversation.c	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 libpurple/conversation.c
+--- a/libpurple/conversation.c	Mon Feb 11 01:13:50 2013 -0800
++++ b/libpurple/conversation.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -335,6 +335,8 @@
  	PurpleConnection *gc;
  	PurpleConversationUiOps *ops;
@@ -2045,9 +2045,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/conversation.c
  			c = g_hash_table_lookup(conversation_cache, &hc);
  			break;
  		case PURPLE_CONV_TYPE_ANY:
-diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
---- a/libpurple/log.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/libpurple/log.c	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 libpurple/log.c
+--- a/libpurple/log.c	Mon Feb 11 01:13:50 2013 -0800
++++ b/libpurple/log.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -51,6 +51,7 @@
  
  static void log_get_log_sets_common(GHashTable *sets);
@@ -2188,9 +2188,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
  
  	/* if we can't write to the file, give up before we hurt ourselves */
  	if(!data->file)
-diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/media/backend-fs2.h
---- a/libpurple/media/backend-fs2.h	Fri Jul 06 08:05:14 2012 -0700
-+++ b/libpurple/media/backend-fs2.h	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 libpurple/media/backend-fs2.h
+--- a/libpurple/media/backend-fs2.h	Mon Feb 11 01:13:50 2013 -0800
++++ b/libpurple/media/backend-fs2.h	Thu Feb 14 21:05:39 2013 -0500
 @@ -60,6 +60,7 @@
   * Temporary function in order to be able to test while
   * integrating with PurpleMedia
@@ -2207,9 +2207,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/media/backend-fs2.h
  /* end tmp */
  #endif /* USE_GSTREAMER */
  
-diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/plugins/Makefile.am
---- a/libpurple/plugins/Makefile.am	Fri Jul 06 08:05:14 2012 -0700
-+++ b/libpurple/plugins/Makefile.am	Thu Feb 07 11:48:08 2013 -0500
+diff -r ad7e7fb98db3 libpurple/plugins/Makefile.am
+--- a/libpurple/plugins/Makefile.am	Mon Feb 11 01:13:50 2013 -0800
++++ b/libpurple/plugins/Makefile.am	Thu Feb 14 21:05:39 2013 -0500
 @@ -42,6 +42,8 @@
  signals_test_la_LDFLAGS		= -module -avoid-version
  simple_la_LDFLAGS			= -module -avoid-version
@@ -2246,9 +2246,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/plugins/Makefile.am
  
  if ENABLE_DBUS
  
-diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/plugins/statelog.c
+diff -r ad7e7fb98db3 libpurple/plugins/statelog.c
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/libpurple/plugins/statelog.c	Thu Feb 07 11:48:08 2013 -0500
++++ b/libpurple/plugins/statelog.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -0,0 +1,336 @@
 +#include "internal.h"
 +#include "debug.h"
@@ -2586,9 +2586,9 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/plugins/statelog.c
 +}
 +
 +PURPLE_INIT_PLUGIN(statelog, init_plugin, info)
-diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/plugins/syncnotify.c
+diff -r ad7e7fb98db3 libpurple/plugins/syncnotify.c
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/libpurple/plugins/syncnotify.c	Thu Feb 07 11:48:08 2013 -0500
++++ b/libpurple/plugins/syncnotify.c	Thu Feb 14 21:05:39 2013 -0500
 @@ -0,0 +1,95 @@
 +#include "internal.h"
 +#include "debug.h"
