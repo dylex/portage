@@ -9,9 +9,9 @@ HOMEPAGE="http://www.jwz.org/xdaliclock"
 #SRC_URI="http://www.jwz.org/${PN}/${P}.tar.gz"
 EGIT_REPO_URI="file:///usr/local/src/${PN}"
 EGIT_BRANCH="${PV}"
-EGIT_STORE_DIR="${WORKDIR}/git-src"
+EGIT3_STORE_DIR="${WORKDIR}/git-src"
 
-inherit autotools eutils git
+inherit autotools eutils git-r3
 
 LICENSE="BSD"
 SLOT="0"

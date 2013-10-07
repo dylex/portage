@@ -1,5 +1,5 @@
 EAPI=2
-inherit autotools eutils git
+inherit autotools eutils git-r3
 
 DESCRIPTION="rxvt clone based on mrxvt"
 HOMEPAGE="http://materm.sourceforge.net/"

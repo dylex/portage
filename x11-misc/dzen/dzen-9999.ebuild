@@ -11,7 +11,7 @@ DESCRIPTION="a general purpose messaging, notification and menuing program for X
 HOMEPAGE="http://gotmor.googlepages.com/dzen"
 EGIT_REPO_URI="git://github.com/dylex/dzen.git"
 
-inherit toolchain-funcs multilib git
+inherit toolchain-funcs multilib git-r3
 
 LICENSE="MIT"
 KEYWORDS="~amd64"
@@ -24,9 +24,10 @@ RDEPEND="x11-libs/libX11
 DEPEND="${RDEPEND}
 	xinerama? ( x11-proto/xineramaproto )"
 
-S=${WORKDIR}/${MY_P}
+#S=${WORKDIR}/${MY_P}
 
 src_prepare() {
+	#cd ${S}
 	sed -i \
 		-e 's:../dzen2:dzen2:' \
 		gadgets/kittscanner.sh || die
