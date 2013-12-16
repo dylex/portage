@@ -1,6 +1,6 @@
 EAPI=5
 
-inherit git
+inherit git-r3
 
 MY_PV="${PV##*.}"
 MY_P="${PN}-${MY_PV}"

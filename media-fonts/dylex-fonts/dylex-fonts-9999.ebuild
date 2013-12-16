@@ -1,6 +1,6 @@
 EAPI=5
 
-inherit font git
+inherit font git-r3
 
 DESCRIPTION="Monospace terminal fonts for text and coding."
 HOMEPAGE="http://github.com/dylex/fonts"
