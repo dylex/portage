@@ -1,9 +1,9 @@
-EAPI=3
+EAPI=5
 
 MY_PV="${PV/f/fruit}"
 MY_P=${PN}-${MY_PV}
 
-inherit eutils
+inherit eutils user
 
 DESCRIPTION="Secure, reliable, scalable and usable instant messaging services"
 HOMEPAGE="http://www.gale.org/"
@@ -23,11 +23,16 @@ RDEPEND="${DEPEND}"
 S=${WORKDIR}/${MY_P}
 
 src_prepare() {
+	epatch "${FILESDIR}"/${P}-bindaf.patch
 	sed -i '/(PROG_LDCONFIG)/d' Makefile.am Makefile.in liboop/Makefile.am liboop/Makefile.in
 }
 
 src_configure() {
 	econf $(use_enable adns)
+}
+
+src_compile() {
+	emake -j1
 }
 
 src_install() {

@@ -1,0 +1,11 @@
+diff -Naru gale-0.99fruit.orig/server/galed.c gale-0.99fruit/server/galed.c
+--- gale-0.99fruit.orig/server/galed.c	2001-09-10 17:46:05.000000000 -0400
++++ gale-0.99fruit/server/galed.c	2014-07-06 20:44:13.935409634 -0400
+@@ -130,6 +130,7 @@
+ 		return;
+ 	}
+ 	fcntl(sock,F_SETFD,1);
++	sin.sin_family = AF_INET;
+ 	sin.sin_addr.s_addr = INADDR_ANY;
+ 	sin.sin_port = htons(port);
+ 	if (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,
