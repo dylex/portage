@@ -1,0 +1,30 @@
+--- pGOCaml.mli.orig	2009-06-04 13:14:29.000000000 -0400
++++ pGOCaml.mli	2009-06-26 15:25:18.000000000 -0400
+@@ -203,6 +203,8 @@
+ type point = float * float
+ type int32_array = int32 array
+ 
++type inet = Unix.inet_addr * int
++
+ val string_of_oid : oid -> string
+ val string_of_bool : bool -> string
+ val string_of_int : int -> string
+@@ -219,8 +221,10 @@
+ val string_of_int32_array : int32_array -> string
+ val string_of_bytea : bytea -> string
+ val string_of_string : string -> string
++val string_of_inet : inet -> string
+ val string_of_unit : unit -> string
+ 
++val oid_of_string : string -> oid
+ val bool_of_string : string -> bool
+ val int_of_string : string -> int
+ val int16_of_string : string -> int16
+@@ -235,6 +239,7 @@
+ val interval_of_string : string -> Calendar.Period.t
+ val int32_array_of_string : string -> int32_array
+ val bytea_of_string : string -> bytea
++val inet_of_string : string -> inet
+ val unit_of_string : string -> unit
+ (** These conversion functions are used by pa_pgsql to convert
+   * values in and out of the database.

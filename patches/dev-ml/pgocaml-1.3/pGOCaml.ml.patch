@@ -1,0 +1,65 @@
+--- pGOCaml.ml.orig	2009-06-04 13:14:29.000000000 -0400
++++ pGOCaml.ml	2009-06-26 15:26:11.000000000 -0400
+@@ -1049,8 +1049,10 @@
+   | 21_l -> "int16"			(* INT2 *)
+   | 23_l -> "int32"			(* INT4 *)
+   | 25_l -> "string"			(* TEXT *)
++  | 26_l -> "oid"			(* OID *)
+   | 600_l -> "point"			(* POINT *)
+   | 700_l | 701_l -> "float"		(* FLOAT4, FLOAT8 *)
++  | 869_l | 650_l -> "inet"		(* INET, CIDR *)
+   | 1007_l -> "int32_array"		(* INT4[] *)
+   | 1042_l -> "string"			(* CHAR(n) - treat as string *)
+   | 1043_l -> "string"			(* VARCHAR(n) - treat as string *)
+@@ -1072,6 +1074,7 @@
+ 	   eprintf "numeric modifier = %ld\n%!" modifier;
+ 	   "float"
+       );
++  | 705_l -> raise (Error ("PGOCaml: expression type is unknown; please rewrite with explicit casts"))
+   | i ->
+       (* For unknown types, look at <postgresql/catalog/pg_type.h>. *)
+       raise (Error ("PGOCaml: unknown type for OID " ^ Int32.to_string i))
+@@ -1082,6 +1085,8 @@
+ type point = float * float
+ type int32_array = int32 array
+ 
++type inet = Unix.inet_addr * int
++
+ let string_of_oid = Int32.to_string
+ let string_of_bool = function
+   | true -> "t"
+@@ -1109,6 +1114,7 @@
+ let string_of_interval p =
+   let y, m, d, s = Calendar.Period.ymds p in
+   sprintf "%d years %d mons %d days %d seconds" y m d s
++let string_of_inet (a, m) = Unix.string_of_inet_addr a ^ "/" ^ Pervasives.string_of_int m
+ let string_of_unit () = ""
+ 
+ (* NB. It is the responsibility of the caller of this function to
+@@ -1145,6 +1151,7 @@
+ 
+ let string_of_string (x : string) = x
+ 
++let oid_of_string = Int32.of_string
+ let bool_of_string = function
+   | "true" | "t" -> true
+   | "false" | "f" -> false
+@@ -1233,6 +1240,18 @@
+ 
+ let unit_of_string _ = ()
+ 
++let inet_of_string s =
++  let a, m = 
++    try
++      let i = String.index s '/' in
++      String.sub s 0 i, Some (String.sub s (succ i) ((String.length s) - i - 1))
++    with Not_found -> s, None in
++  let a = Unix.inet_addr_of_string a in
++  let m = match m with
++      None -> 32 (* XXX IPv6 *)
++    | Some m -> Pervasives.int_of_string m in
++  a, m
++
+ (* NB. It is the responsibility of the caller of this function to
+  * properly unescape returned elements.
+  *)

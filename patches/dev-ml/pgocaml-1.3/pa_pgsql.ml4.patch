@@ -1,0 +1,117 @@
+--- pa_pgsql.ml4.orig	2009-06-02 17:20:46.000000000 -0400
++++ pa_pgsql.ml4	2009-06-26 15:25:36.000000000 -0400
+@@ -27,6 +27,7 @@
+ open ExtList
+ 
+ let nullable_name = "nullable"
++let typeoid_name = "typeoid"
+ 
+ (* We need a database connection while compiling.  If people use the
+  * override flags like "database=foo", then we may connect to several
+@@ -70,6 +71,9 @@
+                       and attnum = $2" in
+       PGOCaml.prepare dbh ~query ~name:nullable_name ();
+ 
++      let query = "select oid from pg_type where typname = $1" in
++      PGOCaml.prepare dbh ~query ~name:typeoid_name ();
++
+       Hashtbl.add connections key dbh;
+       dbh
+ 
+@@ -86,10 +90,22 @@
+   let key = ref { host = None; port = None; user = None;
+ 		  password = None; database = None;
+ 		  unix_domain_socket_dir = None } in
++  let reg_types = Hashtbl.create 5 in
++  let toreg_types = ref [] in
+   List.iter (
+     function
+     | "execute" -> f_execute := true
+     | "nullable-results" -> f_nullable_results := true
++    | str when String.starts_with str "typeoid:" ->
++	let eq = String.index_from str 8 '=' in
++	let oid = PGOCaml.oid_of_string (String.sub str 8 (eq - 8)) in
++	let name = String.sub str (succ eq) (String.length str - (succ eq)) in
++	Hashtbl.add reg_types oid name
++    | str when String.starts_with str "type:" ->
++	let eq = try String.index_from str 5 '=' with Not_found -> String.length str in
++	let tyname = String.sub str 5 (eq - 5) in
++	let name = if eq == String.length str then tyname else String.sub str (succ eq) (String.length str - (succ eq)) in
++	toreg_types := (tyname, name) :: !toreg_types
+     | str when String.starts_with str "host=" ->
+ 	let host = String.sub str 5 (String.length str - 5) in
+ 	key := { !key with host = Some host }
+@@ -120,6 +136,16 @@
+   (* Connect, if necessary, to the database. *)
+   let my_dbh = get_connection key in
+ 
++  List.iter (
++    fun (tyname, name) ->
++      let params = [ Some (PGOCaml.string_of_string tyname) ] in
++      let rows = PGOCaml.execute my_dbh ~name:typeoid_name ~params () in
++      let oid = match rows with
++	| [ [ Some oid ] ] -> PGOCaml.oid_of_string oid
++	| _ -> Loc.raise loc (Failure ("No OID found for type " ^ tyname)) in
++      Hashtbl.add reg_types oid name
++  ) !toreg_types;
++
+   (* Split the query into text and variable name parts using Pcre.full_split.
+    * eg. "select id from employees where name = $name and salary > $salary"
+    * would become a structure equivalent to:
+@@ -202,18 +228,22 @@
+     List.fold_right
+       (fun (i, { PGOCaml.param_type = param_type }) tail ->
+ 	 let varname, list, option = List.assoc i varmap in
+-	 let fn = PGOCaml.name_of_type param_type in
+-	 let fn = "string_of_" ^ fn in
++	 let fn = try
++	     let t = Hashtbl.find reg_types param_type in
++	     <:expr< $lid:"string_of_" ^ t$ >>
++	   with Not_found ->
++	     let t = PGOCaml.name_of_type param_type in
++	     <:expr< PGOCaml.$lid:"string_of_" ^ t$ >> in
+ 	 let head =
+ 	   match list, option with
+ 	   | false, false ->
+-	     <:expr< [ Some (PGOCaml.$lid:fn$ $lid:varname$) ] >>
++	     <:expr< [ Some ($fn$ $lid:varname$) ] >>
+ 	   | false, true ->
+-	     <:expr< [ Option.map PGOCaml.$lid:fn$ $lid:varname$ ] >>
++	     <:expr< [ Option.map $fn$ $lid:varname$ ] >>
+ 	   | true, false ->
+-	     <:expr< List.map (fun x -> Some (PGOCaml.$lid:fn$ x)) $lid:varname$ >>
++	     <:expr< List.map (fun x -> Some ($fn$ x)) $lid:varname$ >>
+ 	   | true, true ->
+-	     <:expr< List.map (fun x -> Option.map PGOCaml.$lid:fn$ x) $lid:varname$ >> in
++	     <:expr< List.map (fun x -> Option.map $fn$ x) $lid:varname$ >> in
+ 	 <:expr< [ $head$ :: $tail$ ] >>
+       )
+       (List.combine (range 1 (1 + List.length varmap)) params)
+@@ -316,9 +346,12 @@
+ 	  fun i result ->
+ 	    let field_type = result.PGOCaml.field_type in
+ 	    let modifier = result.PGOCaml.modifier in
+-	    let fn =
+-	      PGOCaml.name_of_type ~modifier field_type in
+-	    let fn = fn ^ "_of_string" in
++	    let fn = try
++	        let t = Hashtbl.find reg_types field_type in
++	        <:expr< $lid:t ^ "_of_string"$ >>
++	      with Not_found ->
++		let t = PGOCaml.name_of_type ~modifier field_type in
++		<:expr< PGOCaml.$lid:t ^ "_of_string"$ >> in
+ 	    let nullable =
+ 	      f_nullable_results ||
+ 	      match (result.PGOCaml.table, result.PGOCaml.column) with
+@@ -339,9 +372,9 @@
+ 	      | _ -> true (* Assume it could be nullable. *) in
+ 	    let col = <:expr< $lid:"c" ^ string_of_int i$ >> in
+ 	    if nullable then
+-	      <:expr< Option.map PGOCaml.$lid:fn$ $col$ >>
++	      <:expr< Option.map $fn$ $col$ >>
+ 	    else
+-	      <:expr< PGOCaml.$lid:fn$ (Option.get $col$) >>
++	      <:expr< $fn$ (Option.get $col$) >>
+ 	) results in
+ 
+       let convert =
