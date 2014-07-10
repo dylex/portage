@@ -1,0 +1,47 @@
+--- gd.ml.orig	2007-04-07 00:53:10.000000000 -0400
++++ gd.ml	2007-04-07 22:39:17.000000000 -0400
+@@ -173,6 +173,7 @@
+     = "ml_image_create_truecolor"
+ external do_image_open_png: string -> t = "ml_image_open_png"
+ external do_image_open_jpeg: string -> t = "ml_image_open_jpeg"
++external do_image_open_gd2: string -> t = "ml_image_open_gd2"
+ 
+ external do_is_truecolor: t -> bool = "ml_image_is_truecolor"
+ 
+@@ -467,22 +468,16 @@
+   object(self)
+     inherit gd_color_allocator im
+ 
+-    val colors:((int, color) Hashtbl.t) = Hashtbl.create 1024
+-
+     method private new_ml_color idx =
+       let mc =
+         { index = idx;
+-          red_channel = (do_red_channel im idx);
+-          green_channel = (do_green_channel im idx);
+-          blue_channel = (do_blue_channel im idx);
+-          alpha_channel = (do_alpha_channel im idx); }  in
+-      Hashtbl.replace colors idx mc;
++          red_channel = (idx lsr 16) land 0xff (* do_red_channel im idx *);
++          green_channel = (idx lsr 8) land 0xff (* do_green_channel im idx *);
++          blue_channel = idx land 0xff (* do_blue_channel im idx *);
++          alpha_channel = (idx lsr 24) land 0xff (* do_alpha_channel im idx *); }  in
+       mc
+ 
+     method get_color_by_index idx =
+-      try
+-        Hashtbl.find colors idx
+-      with Not_found ->
+         self#new_ml_color idx
+   
+   end
+@@ -648,3 +643,9 @@
+ 
+ let open_jpeg filename =
+   new gdImageT (do_image_open_jpeg filename)
++
++let open_gd2 filename =
++  let im = (do_image_open_gd2 filename) in
++  if (is_truecolor im) then new gdImageT im
++  else new gdImage8 im
++

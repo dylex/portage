@@ -1,0 +1,51 @@
+--- gdstubs.c.orig	2007-03-07 21:47:41.000000000 -0500
++++ gdstubs.c	2007-04-07 00:52:55.000000000 -0400
+@@ -238,6 +238,30 @@
+ #endif
+ }
+ 
++value ml_image_open_gd2(value filename) {
++  CAMLparam1(filename);
++  CAMLlocal1(v);
++  FILE *in;
++  gdImagePtr im;
++
++  in = fopen(String_val(filename), "rb");
++  if (!in)
++    raise_not_found();
++  
++  im = gdImageCreateFromGd2(in);
++
++  fclose(in);
++
++  if (!im) 
++    raise_constant(*(value *)caml_named_value("gdopen failed"));
++
++  v =  alloc_custom(&image_t_custom_operations, sizeof(GdWrapper),
++                    sizeof(gdImage) + (gdImageSX(im) * gdImageSY(im)), 100000);
++  IM_VAL(v) = im;
++
++  CAMLreturn(v);
++}
++
+ value ml_image_line_native(value gdw, value x1, value y1, value x2, value y2,
+                            value c, value pc) {
+   int pcval;
+@@ -728,6 +752,8 @@
+   FILE *out;
+   
+   out = fopen(String_val(filename), "wb");
++  if (!out)
++    raise_not_found();
+   gdImagePng(IM_VAL(gdw), out);
+   fclose(out);
+   
+@@ -739,6 +765,8 @@
+   FILE *out;
+ 
+   out = fopen(String_val(filename), "wb");
++  if (!out)
++    raise_not_found();
+   gdImageJpeg(IM_VAL(gdw), out, Int_val(quality));
+   fclose(out);
+ #else

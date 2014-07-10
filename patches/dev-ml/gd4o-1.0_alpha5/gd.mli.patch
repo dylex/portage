@@ -1,0 +1,11 @@
+--- gd.mli.orig	2007-04-07 00:56:31.000000000 -0400
++++ gd.mli	2007-04-07 00:56:41.000000000 -0400
+@@ -221,6 +221,8 @@
+ (* Same, but for jpeg's *)
+ val open_jpeg: string -> image
+ 
++val open_gd2: string -> image
++
+ val is_truecolor: t -> bool
+ 
+ (* Return the bounding box for a string rendered with FreeType *)
