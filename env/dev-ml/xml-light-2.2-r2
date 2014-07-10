@@ -1,0 +1,6 @@
+post_src_compile () {
+	emake opt
+}
+post_src_install () {
+	 emake INSTALLDIR="${D}"/usr/$(get_libdir)/ocaml/${PN} installopt
+}
