@@ -16,6 +16,7 @@ DEPEND=""
 RDEPEND="${DEPEND}"
 
 S=${WORKDIR}/${EHG_PROJECT}
+MOZILLA_FIVE_HOME=/usr/lib/firefox/browser
 
 src_compile() {
 	cd ${S}
@@ -23,7 +24,8 @@ src_compile() {
 }
 
 src_install() {
-	xpiname=${S}/downloads/vimperator_*.xpi
-	xpi_unpack $xpiname
-	xpi_install .
+	xpiname=${S}/downloads/vimperator-*.xpi
+	xpi_unpack $xpiname 
+	xpibase=$(basename $xpiname)
+	xpi_install ${WORKDIR}/${xpibase%.xpi}
 }
