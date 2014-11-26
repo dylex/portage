@@ -1,11 +1,12 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/net-im/pidgin/pidgin-2.10.3.ebuild,v 1.8 2012/05/06 18:57:00 halcy0n Exp $
+# $Header: /var/cvsroot/gentoo-x86/net-im/pidgin/pidgin-2.10.11.ebuild,v 1.1 2014/11/25 17:07:38 polynomial-c Exp $
 
-EAPI=4
+EAPI=5
 
 GENTOO_DEPEND_ON_PERL=no
-inherit flag-o-matic eutils toolchain-funcs multilib perl-app gnome2 python autotools base
+PYTHON_COMPAT=( python2_7 python3_3 python3_4 )
+inherit autotools flag-o-matic eutils toolchain-funcs multilib perl-app gnome2 python-single-r1
 
 DESCRIPTION="GTK Instant Messenger client"
 HOMEPAGE="http://pidgin.im/"
@@ -13,10 +14,11 @@ SRC_URI="mirror://sourceforge/${PN}/${P}.tar.bz2"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86"
-IUSE="dbus debug doc eds gadu gnutls +gstreamer +gtk idn meanwhile"
-IUSE+=" networkmanager nls perl silc tcl tk spell qq sasl ncurses"
+KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-freebsd ~amd64-linux ~x86-linux ~x86-macos"
+IUSE="dbus debug doc gadu gnutls +gstreamer +gtk idn meanwhile mxit"
+IUSE+=" networkmanager nls perl silc tcl tk spell sasl ncurses"
 IUSE+=" groupwise prediction python X +xscreensaver zephyr zeroconf" # mono"
+IUSE+=" aqua"
 IUSE+=" +irc +jabber +oscar +yahoo +simple +msn +myspace"
 
 # dbus requires python to generate C code for dbus bindings (thus DEPEND only).
@@ -29,29 +31,28 @@ RDEPEND="
 	>=dev-libs/glib-2.16
 	>=dev-libs/libxml2-2.6.18
 	ncurses? ( sys-libs/ncurses[unicode]
-		dbus? ( <dev-lang/python-3 )
-		python? ( <dev-lang/python-3 ) )
+		dbus? ( ${PYTHON_DEPS} )
+		python? ( ${PYTHON_DEPS} ) )
 	gtk? (
-		>=x11-libs/gtk+-2.10:2
+		>=x11-libs/gtk+-2.10:2[aqua=]
 		x11-libs/libSM
 		xscreensaver? ( x11-libs/libXScrnSaver )
 		spell? ( >=app-text/gtkspell-2.0.2:2 )
-		eds? ( gnome-extra/evolution-data-server )
 		prediction? ( >=dev-db/sqlite-3.3:3 ) )
 	gstreamer? ( =media-libs/gstreamer-0.10*
 		=media-libs/gst-plugins-good-0.10*
-		>=net-libs/farsight2-0.0.14
-		media-plugins/gst-plugins-meta
-		media-plugins/gst-plugins-gconf )
+		net-libs/farstream:0.1
+		media-plugins/gst-plugins-meta:0.10
+		media-plugins/gst-plugins-gconf:0.10 )
 	zeroconf? ( net-dns/avahi[dbus] )
 	dbus? ( >=dev-libs/dbus-glib-0.71
 		>=sys-apps/dbus-0.90
 		dev-python/dbus-python )
-	perl? ( >=dev-lang/perl-5.8.2-r1[-build] )
+	perl? ( >=dev-lang/perl-5.16 )
 	gadu? ( || ( >=net-libs/libgadu-1.11.0[ssl,gnutls]
 		>=net-libs/libgadu-1.11.0[-ssl] ) )
 	gnutls? ( net-libs/gnutls )
-	!gnutls? ( >=dev-libs/nss-3.11 )
+	!gnutls? ( >=dev-libs/nss-3.15.4 )
 	meanwhile? ( net-libs/meanwhile )
 	silc? ( >=net-im/silc-toolkit-1.0.1 )
 	tcl? ( dev-lang/tcl )
@@ -72,11 +73,14 @@ DEPEND="$RDEPEND
 	virtual/pkgconfig
 	gtk? ( x11-proto/scrnsaverproto
 		${NLS_DEPEND} )
-	dbus? ( <dev-lang/python-3 )
+	dbus? ( ${PYTHON_DEPS} )
 	doc? ( app-doc/doxygen )
 	!gtk? ( nls? ( ${NLS_DEPEND} ) )"
 
 DOCS="AUTHORS HACKING NEWS README ChangeLog"
+
+REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )
+		dbus? ( ${PYTHON_REQUIRED_USE} )"
 
 # Enable Default protocols
 DYNAMIC_PRPLS=""
@@ -117,9 +121,8 @@ pkg_setup() {
 		elog "You did not pick the ncurses or gtk use flags, only libpurple"
 		elog "will be built."
 	fi
-	if use dbus || { use ncurses && use python; }; then
-		python_set_active_version 2
-		python_pkg_setup
+	if use python || use dbus ; then
+		python-single-r1_pkg_setup
 	fi
 
 	# dbus is enabled, no way to disable linkage with python => python is enabled
@@ -133,9 +136,8 @@ pkg_setup() {
 }
 
 src_prepare() {
-	base_src_prepare
-	gnome2_src_prepare
-	mkdir m4
+	epatch_user
+
 	eautoreconf
 }
 
@@ -160,31 +162,30 @@ src_configure() {
 			myconf="${myconf} --with-gadu-libs=."
 	fi
 
-	use silc && DYNAMIC_PRPLS+=",silc"
-	use qq && DYNAMIC_PRPLS+=",qq"
-	use meanwhile && DYNAMIC_PRPLS+=",sametime"
-	use zeroconf && DYNAMIC_PRPLS+=",bonjour"
 	use groupwise && DYNAMIC_PRPLS+=",novell"
+	use silc && DYNAMIC_PRPLS+=",silc"
+	use meanwhile && DYNAMIC_PRPLS+=",sametime"
+	use mxit && DYNAMIC_PRPLS+=",mxit"
 	use zephyr && DYNAMIC_PRPLS+=",zephyr"
+	use zeroconf && DYNAMIC_PRPLS+=",bonjour"
 
 	if use gnutls; then
 		einfo "Disabling NSS, using GnuTLS"
 		myconf+=" --enable-nss=no --enable-gnutls=yes"
-		myconf+=" --with-gnutls-includes=/usr/include/gnutls"
-		myconf+=" --with-gnutls-libs=/usr/$(get_libdir)"
+		myconf+=" --with-gnutls-includes=${EPREFIX}/usr/include/gnutls"
+		myconf+=" --with-gnutls-libs=${EPREFIX}/usr/$(get_libdir)"
 	else
 		einfo "Disabling GnuTLS, using NSS"
 		myconf+=" --enable-gnutls=no --enable-nss=yes"
 	fi
 
 	if use dbus || { use ncurses && use python; }; then
-		myconf+=" --with-python=$(PYTHON)"
+		myconf+=" --with-python=${PYTHON}"
 	else
 		myconf+=" --without-python"
 	fi
 
 	econf \
-		--disable-silent-rules \
 		$(use_enable ncurses consoleui) \
 		$(use_enable gtk gtkui) \
 		$(use_enable gtk sm) \
@@ -192,7 +193,6 @@ src_configure() {
 		$(use gtk && echo "--enable-nls") \
 		$(use gtk && use_enable xscreensaver screensaver) \
 		$(use gtk && use_enable prediction cap) \
-		$(use gtk && use_enable eds gevolution) \
 		$(use gtk && use_enable spell gtkspell) \
 		$(use_enable perl) \
 		$(use_enable tk) \
@@ -201,7 +201,7 @@ src_configure() {
 		$(use_enable dbus) \
 		$(use_enable meanwhile) \
 		$(use_enable gstreamer) \
-		$(use_enable gstreamer farsight) \
+		$(use_enable gstreamer farstream) \
 		$(use_enable gstreamer vv) \
 		$(use_enable sasl cyrus-sasl ) \
 		$(use_enable doc doxygen) \
@@ -209,10 +209,10 @@ src_configure() {
 		$(use_enable zeroconf avahi) \
 		$(use_enable idn) \
 		$(use_with X x) \
-		--with-system-ssl-certs="/etc/ssl/certs/" \
+		--with-system-ssl-certs="${EPREFIX}/etc/ssl/certs/" \
 		--with-dynamic-prpls="${DYNAMIC_PRPLS}" \
 		--disable-mono \
-		$(use X && echo "--x-includes=/usr/include/X11") \
+		$(use X && echo "--x-includes=\"${EPREFIX}\"/usr/include/X11") \
 		${myconf}
 		#$(use_enable mono) \
 }
@@ -224,7 +224,7 @@ src_install() {
 		# implementations that are not complient with new hicolor theme yet, #323355
 		local pixmapdir
 		for d in 16 22 32 48; do
-			pixmapdir=${D}/usr/share/pixmaps/pidgin/tray/hicolor/${d}x${d}/actions
+			pixmapdir=${ED}/usr/share/pixmaps/pidgin/tray/hicolor/${d}x${d}/actions
 			mkdir "${pixmapdir}" || die
 			pushd "${pixmapdir}" >/dev/null || die
 			for f in ../status/*; do
@@ -233,10 +233,15 @@ src_install() {
 			popd >/dev/null
 		done
 	fi
-	use perl && fixlocalpod
+	use perl && perl_delete_localpod
+
+	if use python || use dbus ; then
+		python_fix_shebang "${D}"
+		python_optimize
+	fi
 
 	dodoc finch/plugins/pietray.py
 	docompress -x /usr/share/doc/${PF}/pietray.py
 
-	find "${ED}" -type f -name '*.la' -exec rm -rf '{}' '+' || die "la removal failed"
+	prune_libtool_files --all
 }

@@ -1,22 +1,50 @@
-diff -r 4992bd90d8ad -r 7d10911a27d0 Makefile.am
---- a/Makefile.am	Fri Jul 06 08:05:14 2012 -0700
-+++ b/Makefile.am	Thu Feb 07 11:48:08 2013 -0500
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..42193c7
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,20 @@
++Makefile
++Makefile.in
++/aclocal.m4
++/autom4te.cache/
++/compile
++/config.cache
++/config.guess
++/config.h.in
++/config.log
++/config.status
++/config.sub
++/configure
++/depcomp
++/install-sh
++/intltool-*
++/ltmain.sh
++/missing
++/po/Makefile.in.in
++/po/Makefile.in.in.bak
++/test-driver
+diff --git a/Makefile.am b/Makefile.am
+index cba9df2..59057d6 100644
+--- a/Makefile.am
++++ b/Makefile.am
 @@ -1,4 +1,4 @@
 -EXTRA_DIST = \
 +EXTRA_DIST = config.rpath  \
  		COPYRIGHT \
  		ChangeLog.API \
  		ChangeLog.win32 \
-@@ -145,3 +145,5 @@
+@@ -141,3 +141,5 @@ distuninstallcheck_listfiles = \
  
- DISTCLEANFILES= $(DESKTOP_FILE) libpurple/gconf/purple.schemas intltool-extract \
- 			intltool-merge intltool-update
+ DISTCLEANFILES= intltool-extract intltool-merge intltool-update \
+ 			package_revision_raw.txt
 +
 +ACLOCAL_AMFLAGS = -I m4
-diff -r 4992bd90d8ad -r 7d10911a27d0 configure.ac
---- a/configure.ac	Fri Jul 06 08:05:14 2012 -0700
-+++ b/configure.ac	Thu Feb 07 11:48:08 2013 -0500
-@@ -1413,7 +1413,7 @@
+diff --git a/configure.ac b/configure.ac
+index 51471b1..44637e7 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1408,7 +1408,7 @@ AC_ARG_WITH([python],
  
  if test "x$enable_dbus" = "xyes" || test "x$enable_consoleui" = "xyes" ; then
  	if test -z "$PYTHON" -o "x$PYTHON" = "xyes"; then
@@ -25,10 +53,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 configure.ac
  	fi
  
  	if test x"$PYTHON" = x"no" ; then
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/Makefile.am
---- a/finch/Makefile.am	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/Makefile.am	Thu Feb 07 11:48:08 2013 -0500
-@@ -25,6 +25,7 @@
+diff --git a/finch/Makefile.am b/finch/Makefile.am
+index 85502d3..49776c5 100644
+--- a/finch/Makefile.am
++++ b/finch/Makefile.am
+@@ -25,6 +25,7 @@ finch_SOURCES = \
  	gntft.c \
  	finch.c \
  	gntidle.c \
@@ -36,7 +65,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/Makefile.am
  	gntlog.c \
  	gntmedia.c \
  	gntnotify.c \
-@@ -47,6 +48,7 @@
+@@ -47,6 +48,7 @@ finch_headers = \
  	gntft.h \
  	finch.h \
  	gntidle.h \
@@ -44,10 +73,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/Makefile.am
  	gntlog.h \
  	gntmedia.h \
  	gntnotify.h \
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntblist.c
---- a/finch/gntblist.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/gntblist.c	Thu Feb 07 11:48:08 2013 -0500
-@@ -1322,6 +1322,13 @@
+diff --git a/finch/gntblist.c b/finch/gntblist.c
+index b2c62c5..c8af2db 100644
+--- a/finch/gntblist.c
++++ b/finch/gntblist.c
+@@ -1322,6 +1322,13 @@ toggle_show_offline(GntMenuItem *item, gpointer buddy)
  }
  
  static void
@@ -61,7 +91,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntblist.c
  create_buddy_menu(GntMenu *menu, PurpleBuddy *buddy)
  {
  	PurpleAccount *account;
-@@ -1361,6 +1368,11 @@
+@@ -1361,6 +1368,11 @@ create_buddy_menu(GntMenu *menu, PurpleBuddy *buddy)
  	gnt_menuitem_set_callback(item, toggle_show_offline, buddy);
  	gnt_menu_add_item(menu, item);
  
@@ -73,7 +103,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntblist.c
  	/* Protocol actions */
  	append_proto_menu(menu,
  			purple_account_get_connection(purple_buddy_get_account(buddy)),
-@@ -2764,6 +2776,55 @@
+@@ -2764,6 +2776,55 @@ block_select(GntMenuItem *item, gpointer n)
  						NULL);
  }
  
@@ -129,7 +159,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntblist.c
  /* send_im_select* -- Xerox */
  static void
  send_im_select_cb(gpointer data, PurpleRequestFields *fields)
-@@ -3012,6 +3073,11 @@
+@@ -3012,6 +3073,11 @@ create_menu(void)
  	gnt_menu_add_item(GNT_MENU(sub), item);
  	gnt_menuitem_set_callback(GNT_MENU_ITEM(item), block_select, NULL);
  
@@ -141,9 +171,10 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntblist.c
  	item = gnt_menuitem_new(_("Join Chat..."));
  	gnt_menuitem_set_id(GNT_MENU_ITEM(item), "join-chat");
  	gnt_menu_add_item(GNT_MENU(sub), item);
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntconv.c
---- a/finch/gntconv.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/gntconv.c	Thu Feb 07 11:48:08 2013 -0500
+diff --git a/finch/gntconv.c b/finch/gntconv.c
+index 04c8828..45e01fd 100644
+--- a/finch/gntconv.c
++++ b/finch/gntconv.c
 @@ -44,6 +44,7 @@
  #include "gntrequest.h"
  #include "gntsound.h"
@@ -152,7 +183,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntconv.c
  
  #include "gnt.h"
  #include "gntbox.h"
-@@ -150,7 +151,7 @@
+@@ -150,7 +151,7 @@ entry_key_pressed(GntWidget *w, FinchConv *ggconv)
  		char *error = NULL, *escape;
  
  		escape = g_markup_escape_text(cmdline, -1);
@@ -161,7 +192,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntconv.c
  		g_free(escape);
  
  		switch (status)
-@@ -906,7 +907,7 @@
+@@ -906,7 +907,7 @@ finch_write_common(PurpleConversation *conv, const char *who, const char *messag
  		PurpleMessageFlags flags, time_t mtime)
  {
  	FinchConv *ggconv = FINCH_GET_DATA(conv);
@@ -170,7 +201,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntconv.c
  	GntTextFormatFlags fl = 0;
  	int pos;
  
-@@ -933,7 +934,7 @@
+@@ -933,7 +934,7 @@ finch_write_common(PurpleConversation *conv, const char *who, const char *messag
  		if (!mtime)
  			time(&mtime);
  		gnt_text_view_append_text_with_flags(GNT_TEXT_VIEW(ggconv->tv),
@@ -179,7 +210,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntconv.c
  	}
  
  	gnt_text_view_append_text_with_flags(GNT_TEXT_VIEW(ggconv->tv), " ", GNT_TEXT_FLAG_NORMAL);
-@@ -976,14 +977,7 @@
+@@ -976,14 +977,7 @@ finch_write_common(PurpleConversation *conv, const char *who, const char *messag
  	if (flags & PURPLE_MESSAGE_ERROR)
  		fl |= GNT_TEXT_FLAG_BOLD;
  
@@ -195,9 +226,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntconv.c
  
  	if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM &&
  			purple_conv_im_get_typing_state(PURPLE_CONV_IM(conv)) == PURPLE_TYPING) {
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntimhtml.c
---- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/finch/gntimhtml.c	Thu Feb 07 11:48:08 2013 -0500
+diff --git a/finch/gntimhtml.c b/finch/gntimhtml.c
+new file mode 100644
+index 0000000..56dc007
+--- /dev/null
++++ b/finch/gntimhtml.c
 @@ -0,0 +1,477 @@
 +/*
 +* @file gntimhtml.c GNT IMHtml
@@ -676,9 +709,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntimhtml.c
 +		g_free(ws);
 +}
 +
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntimhtml.h
---- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/finch/gntimhtml.h	Thu Feb 07 11:48:08 2013 -0500
+diff --git a/finch/gntimhtml.h b/finch/gntimhtml.h
+new file mode 100644
+index 0000000..7760353
+--- /dev/null
++++ b/finch/gntimhtml.h
 @@ -0,0 +1,48 @@
 +/**
 + * @file gntimhtml.h GNT IM/HTML rendering component
@@ -728,19 +763,20 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntimhtml.h
 +/*@}*/
 +
 +#endif /* _GNT_IMHTML_H */
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntnotify.c
---- a/finch/gntnotify.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/gntnotify.c	Thu Feb 07 11:48:08 2013 -0500
-@@ -96,7 +96,7 @@
- 			switch (type) {
- 				case PURPLE_NOTIFY_FORMATTED:
- 					plain = purple_markup_strip_html(secondary);
--					if (gnt_util_parse_xhtml_to_textview(secondary, GNT_TEXT_VIEW(msg)))
-+					if (gnt_util_parse_xhtml_to_textview(secondary, GNT_TEXT_VIEW(msg), 0))
- 						break;
- 					/* Fallthrough */
- 				default:
-@@ -344,7 +344,7 @@
+diff --git a/finch/gntnotify.c b/finch/gntnotify.c
+index f32650d..081490a 100644
+--- a/finch/gntnotify.c
++++ b/finch/gntnotify.c
+@@ -93,7 +93,7 @@ finch_notify_common(PurpleNotifyType ntype, PurpleNotifyMsgType msgtype,
+ 			gnt_text_view_set_flag(GNT_TEXT_VIEW(msg), GNT_TEXT_VIEW_TOP_ALIGN | GNT_TEXT_VIEW_NO_SCROLL);
+ 
+ 			plain = purple_markup_strip_html(secondary);
+-			if (!gnt_util_parse_xhtml_to_textview(secondary, GNT_TEXT_VIEW(msg)))
++			if (!gnt_util_parse_xhtml_to_textview(secondary, GNT_TEXT_VIEW(msg), 0))
+ 				gnt_text_view_append_text_with_flags(GNT_TEXT_VIEW(msg), plain, sf);
+ 
+ 			gnt_text_view_attach_scroll_widget(GNT_TEXT_VIEW(msg), button);
+@@ -348,7 +348,7 @@ finch_notify_userinfo(PurpleConnection *gc, const char *who, PurpleNotifyUserInf
  		gnt_widget_get_size(GNT_WIDGET(msg), &tvw, &tvh);
  
  		gnt_text_view_clear(msg);
@@ -749,10 +785,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntnotify.c
  			gnt_text_view_append_text_with_flags(msg, strip, GNT_TEXT_FLAG_NORMAL);
  		gnt_text_view_scroll(msg, 0);
  		gnt_util_get_text_bound(strip, &ntvw, &ntvh);
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntprefs.c
---- a/finch/gntprefs.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/gntprefs.c	Thu Feb 07 11:48:08 2013 -0500
-@@ -53,11 +53,11 @@
+diff --git a/finch/gntprefs.c b/finch/gntprefs.c
+index 308962d..673ca5c 100644
+--- a/finch/gntprefs.c
++++ b/finch/gntprefs.c
+@@ -53,11 +53,11 @@ void finch_prefs_init()
  
  	purple_prefs_add_none("/finch/conversations");
  	purple_prefs_add_bool("/finch/conversations/timestamps", TRUE);
@@ -765,7 +802,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntprefs.c
  }
  
  void finch_prefs_update_old()
-@@ -190,6 +190,7 @@
+@@ -192,6 +192,7 @@ static Prefs blist[] =
  static Prefs convs[] =
  {
  	{PURPLE_PREF_BOOLEAN, "/finch/conversations/timestamps", N_("Show Timestamps"), NULL},
@@ -773,10 +810,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/gntprefs.c
  	{PURPLE_PREF_BOOLEAN, "/finch/conversations/notify_typing", N_("Notify buddies when you are typing"), NULL},
  	{PURPLE_PREF_NONE, NULL, NULL, NULL}
  };
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/Makefile.am
---- a/finch/libgnt/Makefile.am	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/Makefile.am	Thu Feb 07 11:48:08 2013 -0500
-@@ -10,8 +10,8 @@
+diff --git a/finch/libgnt/Makefile.am b/finch/libgnt/Makefile.am
+index 07533e2..b356273 100644
+--- a/finch/libgnt/Makefile.am
++++ b/finch/libgnt/Makefile.am
+@@ -10,8 +10,8 @@ noinst_HEADERS = gntinternal.h
  
  BUILT_SOURCES = gntmarshal.h
  
@@ -786,7 +824,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/Makefile.am
  	gntwidget.c \
  	gntbindable.c \
  	gntbox.c \
-@@ -53,7 +53,6 @@
+@@ -53,7 +53,6 @@ libgnt_la_headers = \
  	gntkeys.h \
  	gntlabel.h \
  	gntline.h \
@@ -794,7 +832,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/Makefile.am
  	gntmenu.h \
  	gntmenuitem.h \
  	gntmenuitemcheck.h \
-@@ -80,6 +79,7 @@
+@@ -80,6 +79,7 @@ gntmarshal.h: $(srcdir)/genmarshal
  	glib-genmarshal --prefix=gnt_closure_marshal --header $(srcdir)/genmarshal > $@
  
  libgnt_laincludedir=$(includedir)/gnt
@@ -802,9 +840,10 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/Makefile.am
  libgnt_lainclude_HEADERS = \
  	$(libgnt_la_headers)
  
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.c
---- a/finch/libgnt/gntcolors.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntcolors.c	Thu Feb 07 11:48:08 2013 -0500
+diff --git a/finch/libgnt/gntcolors.c b/finch/libgnt/gntcolors.c
+index 9e27143..f51d5e2 100644
+--- a/finch/libgnt/gntcolors.c
++++ b/finch/libgnt/gntcolors.c
 @@ -38,22 +38,26 @@
  #include <string.h>
  
@@ -844,7 +883,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.c
  
  static gboolean
  can_use_custom_color(void)
-@@ -65,10 +69,10 @@
+@@ -65,10 +69,10 @@ static void
  restore_colors(void)
  {
  	short i;
@@ -858,7 +897,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.c
  	}
  }
  
-@@ -76,6 +80,7 @@
+@@ -76,6 +80,7 @@ void gnt_init_colors()
  {
  	static gboolean init = FALSE;
  	int defaults;
@@ -866,21 +905,14 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.c
  
  	if (init)
  		return;
-@@ -86,53 +91,26 @@
+@@ -86,53 +91,26 @@ void gnt_init_colors()
  		return;
  	defaults = use_default_colors();
  
 -	if (can_use_custom_color())
 -	{
 -		backup_colors();
-+	if (defaults == OK) {
-+		bg_color = -1;
-+		init_pair(GNT_COLOR_NORMAL, -1, bg_color);
-+	} else {
-+		bg_color = COLOR_WHITE;
-+		init_pair(GNT_COLOR_NORMAL, COLOR_BLACK, bg_color);
-+	}
- 
+-
 -		/* Do some init_color()s */
 -		init_color(GNT_COLOR_BLACK, 0, 0, 0);
 -		init_color(GNT_COLOR_RED, 1000, 0, 0);
@@ -889,16 +921,12 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.c
 -		init_color(GNT_COLOR_WHITE, 1000, 1000, 1000);
 -		init_color(GNT_COLOR_GRAY, 699, 699, 699);
 -		init_color(GNT_COLOR_DARK_GRAY, 256, 256, 256);
-+	for (c = 1; c < GNT_COLOR_NORMAL; c ++)
-+		init_pair(c, c, bg_color);
- 
+-
 -		/* Now some init_pair()s */
 -		init_pair(GNT_COLOR_NORMAL, GNT_COLOR_BLACK, GNT_COLOR_WHITE);
 -		init_pair(GNT_COLOR_HIGHLIGHT, GNT_COLOR_WHITE, GNT_COLOR_BLUE);
 -		init_pair(GNT_COLOR_SHADOW, GNT_COLOR_BLACK, GNT_COLOR_DARK_GRAY);
-+	init_pair(GNT_COLOR_DISABLED, COLOR_YELLOW, bg_color);
-+	init_pair(GNT_COLOR_URGENT, COLOR_GREEN, bg_color);
- 
+-
 -		init_pair(GNT_COLOR_TITLE, GNT_COLOR_WHITE, GNT_COLOR_BLUE);
 -		init_pair(GNT_COLOR_TITLE_D, GNT_COLOR_WHITE, GNT_COLOR_GRAY);
 -
@@ -927,7 +955,20 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.c
 -		init_pair(GNT_COLOR_TITLE_D, COLOR_WHITE, COLOR_BLACK);
 -		init_pair(GNT_COLOR_TEXT_NORMAL, COLOR_WHITE, COLOR_BLUE);
 -		init_pair(GNT_COLOR_HIGHLIGHT_D, COLOR_CYAN, COLOR_BLACK);
--	}
++	if (defaults == OK) {
++		bg_color = -1;
++		init_pair(GNT_COLOR_NORMAL, -1, bg_color);
++	} else {
++		bg_color = COLOR_WHITE;
++		init_pair(GNT_COLOR_NORMAL, COLOR_BLACK, bg_color);
+ 	}
++
++	for (c = 1; c < GNT_COLOR_NORMAL; c ++)
++		init_pair(c, c, bg_color);
++
++	init_pair(GNT_COLOR_DISABLED, COLOR_YELLOW, bg_color);
++	init_pair(GNT_COLOR_URGENT, COLOR_GREEN, bg_color);
++
 +	init_pair(GNT_COLOR_HIGHLIGHT, COLOR_WHITE, COLOR_BLUE);
 +	init_pair(GNT_COLOR_SHADOW, COLOR_BLACK, COLOR_BLACK);
 +	init_pair(GNT_COLOR_TITLE, COLOR_WHITE, COLOR_BLUE);
@@ -937,7 +978,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.c
  }
  
  void
-@@ -147,31 +125,34 @@
+@@ -147,31 +125,34 @@ int
  gnt_colors_get_color(char *key)
  {
  	int color;
@@ -983,7 +1024,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.c
  		g_warning("Invalid color name: %s\n", key);
  		color = -EINVAL;
  	}
-@@ -213,7 +194,17 @@
+@@ -213,7 +194,17 @@ void gnt_colors_parse(GKeyFile *kfile)
  					continue;
  				}
  
@@ -1002,7 +1043,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.c
  			}
  			g_strfreev(list);
  		}
-@@ -304,6 +295,8 @@
+@@ -304,6 +295,8 @@ int gnt_color_pair(int pair)
  
  int gnt_color_add_pair(int fg, int bg)
  {
@@ -1011,9 +1052,10 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.c
  	init_pair(custom_type, fg, bg);
  	return custom_type++;
  }
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.h
---- a/finch/libgnt/gntcolors.h	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntcolors.h	Thu Feb 07 11:48:08 2013 -0500
+diff --git a/finch/libgnt/gntcolors.h b/finch/libgnt/gntcolors.h
+index 6904b5e..24e09b8 100644
+--- a/finch/libgnt/gntcolors.h
++++ b/finch/libgnt/gntcolors.h
 @@ -34,7 +34,16 @@
   */
  typedef enum
@@ -1032,7 +1074,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.h
  	GNT_COLOR_HIGHLIGHT,		/* eg. when a button is selected */
  	GNT_COLOR_DISABLED,		/* eg. when a button is disabled */
  	GNT_COLOR_HIGHLIGHT_D,	/* eg. when a button is selected, but some other window is in focus */
-@@ -49,18 +58,6 @@
+@@ -49,18 +58,6 @@ typedef enum
  	GNT_COLORS
  } GntColorType;
  
@@ -1051,16 +1093,17 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntcolors.h
  /**
   * Initialize the colors.
   */
-@@ -122,4 +119,5 @@
+@@ -122,4 +119,5 @@ int gnt_color_pair(int color);
   * @since 2.4.0
   */
  int gnt_color_add_pair(int fg, int bg);
 +
  #endif
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gnttextview.c
---- a/finch/libgnt/gnttextview.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gnttextview.c	Thu Feb 07 11:48:08 2013 -0500
-@@ -74,6 +74,13 @@
+diff --git a/finch/libgnt/gnttextview.c b/finch/libgnt/gnttextview.c
+index 3145680..eb3a3cb 100644
+--- a/finch/libgnt/gnttextview.c
++++ b/finch/libgnt/gnttextview.c
+@@ -74,6 +74,13 @@ text_view_contains(GntTextView *view, const char *str)
  }
  
  static void
@@ -1074,7 +1117,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gnttextview.c
  gnt_text_view_draw(GntWidget *widget)
  {
  	GntTextView *view = GNT_TEXT_VIEW(widget);
-@@ -111,36 +118,26 @@
+@@ -111,36 +118,26 @@ gnt_text_view_draw(GntWidget *widget)
  		for (iter = line->segments; iter; iter = iter->next)
  		{
  			GntTextSegment *seg = iter->data;
@@ -1129,23 +1172,24 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gnttextview.c
  		}
  		wattroff(widget->window, A_UNDERLINE | A_BLINK | A_REVERSE);
  		whline(widget->window, ' ', widget->priv.width - line->length - has_scroll);
-@@ -660,10 +657,10 @@
+@@ -660,10 +657,10 @@ chtype gnt_text_format_flag_to_chtype(GntTextFormatFlags flags)
  		fl |= A_UNDERLINE;
  	if (flags & GNT_TEXT_FLAG_BLINK)
  		fl |= A_BLINK;
-+	if (flags & GNT_TEXT_FLAG_DIM)
-+		fl |= A_DIM;
- 
--	if (flags & GNT_TEXT_FLAG_DIM)
+-
+ 	if (flags & GNT_TEXT_FLAG_DIM)
 -		fl |= (A_DIM | gnt_color_pair(GNT_COLOR_DISABLED));
 -	else if (flags & GNT_TEXT_FLAG_HIGHLIGHT)
++		fl |= A_DIM;
++
 +	if (flags & GNT_TEXT_FLAG_HIGHLIGHT)
  		fl |= (A_DIM | gnt_color_pair(GNT_COLOR_HIGHLIGHT));
  	else if ((flags & A_COLOR) == 0)
  		fl |= gnt_color_pair(GNT_COLOR_NORMAL);
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.c
---- a/finch/libgnt/gntutils.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntutils.c	Thu Feb 07 11:48:08 2013 -0500
+diff --git a/finch/libgnt/gntutils.c b/finch/libgnt/gntutils.c
+index 1e41c36..23bb1ac 100644
+--- a/finch/libgnt/gntutils.c
++++ b/finch/libgnt/gntutils.c
 @@ -41,6 +41,7 @@
  #include <stdlib.h>
  #include <string.h>
@@ -1154,7 +1198,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.c
  #ifndef NO_LIBXML
  #include <libxml/parser.h>
  #include <libxml/tree.h>
-@@ -389,7 +390,11 @@
+@@ -389,7 +390,11 @@ util_parse_html_to_tv(xmlNode *node, GntTextView *tv, GntTextFormatFlags flag)
  	gboolean insert_nl_s = FALSE, insert_nl_e = FALSE;
  
  	if (node == NULL || node->name == NULL || node->type != XML_ELEMENT_NODE)
@@ -1166,7 +1210,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.c
  
  	name = (char*)node->name;
  	if (g_ascii_strcasecmp(name, "b") == 0 ||
-@@ -416,6 +421,41 @@
+@@ -416,6 +421,41 @@ util_parse_html_to_tv(xmlNode *node, GntTextView *tv, GntTextFormatFlags flag)
  		insert_nl_s = TRUE;
  		insert_nl_e = TRUE;
  		flag |= GNT_TEXT_FLAG_BOLD | GNT_TEXT_FLAG_UNDERLINE;
@@ -1208,7 +1252,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.c
  	} else {
  		/* XXX: Process other possible tags */
  	}
-@@ -424,7 +464,7 @@
+@@ -424,7 +464,7 @@ util_parse_html_to_tv(xmlNode *node, GntTextView *tv, GntTextFormatFlags flag)
  		gnt_text_view_append_text_with_flags(tv, "\n", flag);
  
  	for (ch = node->children; ch; ch = ch->next) {
@@ -1217,7 +1261,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.c
  			util_parse_html_to_tv(ch, tv, flag);
  		} else if (ch->type == XML_TEXT_NODE) {
  			content = (char*)xmlNodeGetContent(ch);
-@@ -445,15 +485,14 @@
+@@ -445,15 +485,14 @@ util_parse_html_to_tv(xmlNode *node, GntTextView *tv, GntTextFormatFlags flag)
  }
  #endif
  
@@ -1235,7 +1279,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.c
  	gboolean ret = FALSE;
  
  	ctxt = xmlNewParserCtxt();
-@@ -464,6 +503,11 @@
+@@ -464,6 +503,11 @@ gboolean gnt_util_parse_xhtml_to_textview(const char *string, GntTextView *tv)
  		xmlFreeDoc(doc);
  		ret = TRUE;
  	}
@@ -1247,10 +1291,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.c
  	xmlFreeParserCtxt(ctxt);
  	return ret;
  #endif
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.h
---- a/finch/libgnt/gntutils.h	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntutils.h	Thu Feb 07 11:48:08 2013 -0500
-@@ -142,7 +142,7 @@
+diff --git a/finch/libgnt/gntutils.h b/finch/libgnt/gntutils.h
+index 7517d74..6c532fe 100644
+--- a/finch/libgnt/gntutils.h
++++ b/finch/libgnt/gntutils.h
+@@ -142,7 +142,7 @@ void gnt_util_parse_widgets(const char *string, int num, ...);
   *
   * @since 2.2.0
   */
@@ -1259,10 +1304,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntutils.h
  
  /**
   * Make some keypress activate a button when some key is pressed with 'wid' in focus.
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwidget.h
---- a/finch/libgnt/gntwidget.h	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntwidget.h	Thu Feb 07 11:48:08 2013 -0500
-@@ -66,6 +66,7 @@
+diff --git a/finch/libgnt/gntwidget.h b/finch/libgnt/gntwidget.h
+index e25d58f..9ed6b13 100644
+--- a/finch/libgnt/gntwidget.h
++++ b/finch/libgnt/gntwidget.h
+@@ -66,6 +66,7 @@ typedef enum _GntWidgetFlags
  	GNT_WIDGET_INVISIBLE      = 1 << 10,
  	GNT_WIDGET_TRANSIENT      = 1 << 11,
  	GNT_WIDGET_DISABLE_ACTIONS = 1 << 12,
@@ -1270,7 +1316,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwidget.h
  } GntWidgetFlags;
  
  /* XXX: This will probably move elsewhere */
-@@ -103,6 +104,7 @@
+@@ -103,6 +104,7 @@ struct _GntWidget
  
  	GntWidgetPriv priv;
  	WINDOW *window;
@@ -1278,10 +1324,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwidget.h
  
      void (*gnt_reserved1)(void);
      void (*gnt_reserved2)(void);
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
---- a/finch/libgnt/gntwm.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntwm.c	Thu Feb 07 11:48:08 2013 -0500
-@@ -123,14 +123,20 @@
+diff --git a/finch/libgnt/gntwm.c b/finch/libgnt/gntwm.c
+index 310d6c6..21c18b4 100644
+--- a/finch/libgnt/gntwm.c
++++ b/finch/libgnt/gntwm.c
+@@ -123,14 +123,20 @@ g_list_bring_to_front(GList *list, gpointer data)
  }
  
  static void
@@ -1304,7 +1351,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  void
  gnt_wm_copy_win(GntWidget *widget, GntNode *node)
  {
-@@ -248,7 +254,7 @@
+@@ -248,7 +254,7 @@ update_screen(GntWM *wm)
  	if (wm->menu) {
  		GntMenu *top = wm->menu;
  		while (top) {
@@ -1313,7 +1360,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  			if (node)
  				top_panel(node->panel);
  			top = top->submenu;
-@@ -300,8 +306,10 @@
+@@ -300,8 +306,10 @@ sanitize_position(GntWidget *widget, int *x, int *y, gboolean m)
  }
  
  static void
@@ -1325,7 +1372,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	int x, y, w, h;
  	int nw, nh;
  
-@@ -409,7 +417,7 @@
+@@ -409,7 +417,7 @@ gnt_wm_init(GTypeInstance *instance, gpointer class)
  	wm->tagged = NULL;
  	wm->windows = NULL;
  	wm->actions = NULL;
@@ -1334,7 +1381,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	wm->positions = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
  	if (gnt_style_get_bool(GNT_STYLE_REMPOS, TRUE))
  		read_window_positions(wm);
-@@ -448,7 +456,7 @@
+@@ -448,7 +456,7 @@ switch_window(GntWM *wm, int direction, gboolean urgent)
  			pos = 0;
  		} else
  			wid = g_list_nth_data(wm->cws->list, pos);
@@ -1343,7 +1390,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  
  	gnt_wm_raise_window(wm, wid);
  }
-@@ -503,7 +511,7 @@
+@@ -503,7 +511,7 @@ window_scroll_up(GntBindable *bindable, GList *null)
  		return TRUE;
  
  	window = wm->cws->ordered->data;
@@ -1352,7 +1399,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	if (!node)
  		return TRUE;
  
-@@ -527,7 +535,7 @@
+@@ -527,7 +535,7 @@ window_scroll_down(GntBindable *bindable, GList *null)
  		return TRUE;
  
  	window = wm->cws->ordered->data;
@@ -1361,7 +1408,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	if (!node)
  		return TRUE;
  
-@@ -894,6 +902,7 @@
+@@ -900,6 +908,7 @@ shift_window(GntWM *wm, GntWidget *widget, int dir)
  	all = g_list_delete_link(all, list);
  	wm->cws->list = all;
  	gnt_ws_draw_taskbar(wm->cws, FALSE);
@@ -1369,7 +1416,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	if (wm->cws->ordered) {
  		GntWidget *w = wm->cws->ordered->data;
  		GntNode *node = g_hash_table_lookup(wm->nodes, w);
-@@ -901,6 +910,7 @@
+@@ -907,6 +916,7 @@ shift_window(GntWM *wm, GntWidget *widget, int dir)
  		update_panels();
  		doupdate();
  	}
@@ -1377,7 +1424,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  }
  
  static gboolean
-@@ -1054,7 +1064,7 @@
+@@ -1060,7 +1070,7 @@ window_reverse(GntWidget *win, gboolean set, GntWM *wm)
  	for (i = 0; i < h; i += reverse_char(d, i, 0, set));
  	for (i = 0; i < h; i += reverse_char(d, i, w-1, set));
  
@@ -1386,7 +1433,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	update_screen(wm);
  }
  
-@@ -1123,14 +1133,16 @@
+@@ -1129,14 +1139,16 @@ refresh_screen(GntBindable *bindable, GList *null)
  	endwin();
  	refresh();
  
@@ -1404,7 +1451,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  
  	gnt_ws_draw_taskbar(wm->cws, TRUE);
  	update_screen(wm);
-@@ -1360,11 +1372,9 @@
+@@ -1373,11 +1385,9 @@ help_for_widget(GntBindable *bindable, GList *null)
  }
  
  static void
@@ -1418,7 +1465,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  }
  
  static void
-@@ -1372,10 +1382,10 @@
+@@ -1385,10 +1395,10 @@ gnt_wm_destroy(GObject *obj)
  {
  	GntWM *wm = GNT_WM(obj);
  	GList *list = NULL;
@@ -1431,7 +1478,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	wm->nodes = NULL;
  
  	while (wm->workspaces) {
-@@ -1633,9 +1643,9 @@
+@@ -1656,9 +1666,9 @@ gnt_wm_switch_workspace(GntWM *wm, gint n)
  		gnt_widget_destroy(wm->_list.window);
  	}
  	ensure_normal_mode(wm);
@@ -1443,7 +1490,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  
  	gnt_ws_draw_taskbar(wm->cws, TRUE);
  	update_screen(wm);
-@@ -1683,7 +1693,7 @@
+@@ -1706,7 +1716,7 @@ gnt_wm_widget_move_workspace(GntWM *wm, GntWS *neww, GntWidget *widget)
  	GntNode *node;
  	if (!oldw || oldw == neww)
  		return;
@@ -1452,7 +1499,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	if (node && node->ws == neww)
  		return;
  
-@@ -1693,9 +1703,9 @@
+@@ -1716,9 +1726,9 @@ gnt_wm_widget_move_workspace(GntWM *wm, GntWS *neww, GntWidget *widget)
  	gnt_ws_remove_widget(oldw, widget);
  	gnt_ws_add_widget(neww, widget);
  	if (neww == wm->cws) {
@@ -1464,7 +1511,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	}
  }
  
-@@ -1807,9 +1817,15 @@
+@@ -1830,9 +1840,15 @@ gnt_wm_new_window_real(GntWM *wm, GntWidget *widget)
  	node->me = widget;
  	node->scroll = 0;
  
@@ -1482,7 +1529,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  
  	transient = !!GNT_WIDGET_IS_FLAG_SET(node->me, GNT_WIDGET_TRANSIENT);
  
-@@ -1864,7 +1880,7 @@
+@@ -1889,7 +1905,7 @@ gnt_wm_new_window_real(GntWM *wm, GntWidget *widget)
  			gnt_widget_set_focus(node->me, FALSE);
  			gnt_widget_set_urgent(node->me);
  			if (wm->cws != ws)
@@ -1491,7 +1538,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  		}
  	}
  }
-@@ -1875,7 +1891,7 @@
+@@ -1900,7 +1916,7 @@ void gnt_wm_new_window(GntWM *wm, GntWidget *widget)
  		widget = widget->parent;
  
  	if (GNT_WIDGET_IS_FLAG_SET(widget, GNT_WIDGET_INVISIBLE) ||
@@ -1500,7 +1547,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  		update_screen(wm);
  		return;
  	}
-@@ -1920,11 +1936,16 @@
+@@ -1945,11 +1961,16 @@ void gnt_wm_window_close(GntWM *wm, GntWidget *widget)
  
  	s = gnt_wm_widget_find_workspace(wm, widget);
  
@@ -1519,7 +1566,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  
  	if (wm->windows) {
  		gnt_tree_remove(GNT_TREE(wm->windows->tree), widget);
-@@ -2075,13 +2096,13 @@
+@@ -2100,13 +2121,13 @@ gboolean gnt_wm_process_input(GntWM *wm, const char *keys)
  static void
  gnt_wm_win_resized(GntWM *wm, GntNode *node)
  {
@@ -1535,7 +1582,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  }
  
  void gnt_wm_resize_window(GntWM *wm, GntWidget *widget, int width, int height)
-@@ -2092,7 +2113,7 @@
+@@ -2117,7 +2138,7 @@ void gnt_wm_resize_window(GntWM *wm, GntWidget *widget, int width, int height)
  
  	while (widget->parent)
  		widget = widget->parent;
@@ -1544,7 +1591,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	if (!node)
  		return;
  
-@@ -2163,7 +2184,7 @@
+@@ -2188,7 +2209,7 @@ void gnt_wm_move_window(GntWM *wm, GntWidget *widget, int x, int y)
  
  	while (widget->parent)
  		widget = widget->parent;
@@ -1553,7 +1600,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	if (!node)
  		return;
  
-@@ -2194,7 +2215,7 @@
+@@ -2219,7 +2240,7 @@ void gnt_wm_move_window(GntWM *wm, GntWidget *widget, int x, int y)
  static void
  gnt_wm_give_focus(GntWM *wm, GntWidget *widget)
  {
@@ -1562,7 +1609,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  
  	if (!node)
  		return;
-@@ -2212,7 +2233,7 @@
+@@ -2237,7 +2258,7 @@ gnt_wm_give_focus(GntWM *wm, GntWidget *widget)
  	top_panel(node->panel);
  
  	if (wm->_list.window) {
@@ -1571,7 +1618,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  		top_panel(nd->panel);
  	}
  	gnt_ws_draw_taskbar(wm->cws, FALSE);
-@@ -2233,7 +2254,7 @@
+@@ -2258,7 +2279,7 @@ void gnt_wm_update_window(GntWM *wm, GntWidget *widget)
  	}
  
  	ws = gnt_wm_widget_find_workspace(wm, widget);
@@ -1580,10 +1627,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.c
  	if (node == NULL) {
  		gnt_wm_new_window(wm, widget);
  	} else
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.h
---- a/finch/libgnt/gntwm.h	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntwm.h	Thu Feb 07 11:48:08 2013 -0500
-@@ -93,7 +93,7 @@
+diff --git a/finch/libgnt/gntwm.h b/finch/libgnt/gntwm.h
+index 4d8ace2..9766058 100644
+--- a/finch/libgnt/gntwm.h
++++ b/finch/libgnt/gntwm.h
+@@ -93,7 +93,7 @@ struct _GntWM
  		*windows,         /* Window-list window */
  		*actions;         /* Action-list window */
  
@@ -1592,9 +1640,10 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntwm.h
  	GHashTable *name_places;    /* window name -> ws*/
  	GHashTable *title_places;    /* window title -> ws */
  
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.c
---- a/finch/libgnt/gntws.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntws.c	Thu Feb 07 11:48:08 2013 -0500
+diff --git a/finch/libgnt/gntws.c b/finch/libgnt/gntws.c
+index d8d35c1..c081c5c 100644
+--- a/finch/libgnt/gntws.c
++++ b/finch/libgnt/gntws.c
 @@ -30,10 +30,10 @@
  #include "gntws.h"
  
@@ -1608,7 +1657,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.c
  	if (GNT_IS_WINDOW(widget))
  		gnt_window_workspace_hiding(GNT_WINDOW(widget));
  	if (node)
-@@ -41,13 +41,14 @@
+@@ -41,13 +41,14 @@ widget_hide(gpointer data, gpointer nodes)
  }
  
  static void
@@ -1627,7 +1676,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.c
  	}
  }
  
-@@ -72,15 +73,22 @@
+@@ -74,15 +75,22 @@ gnt_ws_draw_taskbar(GntWS *ws, gboolean reposition)
  	wbkgdset(taskbar, '\0' | gnt_color_pair(GNT_COLOR_NORMAL));
  	werase(taskbar);
  
@@ -1652,7 +1701,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.c
  		if (w == ws->ordered->data) {
  			/* This is the current window in focus */
  			color = GNT_COLOR_TITLE;
-@@ -99,6 +107,7 @@
+@@ -101,6 +109,7 @@ gnt_ws_draw_taskbar(GntWS *ws, gboolean reposition)
  		mvwprintw(taskbar, 0, width * i, "%s", title ? C_(title) : "<gnt>");
  		if (i)
  			mvwaddch(taskbar, 0, width *i - 1, ACS_VLINE | A_STANDOUT | gnt_color_pair(GNT_COLOR_NORMAL));
@@ -1660,7 +1709,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.c
  	}
  	wrefresh(taskbar);
  }
-@@ -136,27 +145,27 @@
+@@ -138,27 +147,27 @@ gnt_ws_set_name(GntWS *ws, const gchar *name)
  }
  
  void
@@ -1696,10 +1745,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.c
  }
  
  GType
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.h
---- a/finch/libgnt/gntws.h	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/gntws.h	Thu Feb 07 11:48:08 2013 -0500
-@@ -121,21 +121,19 @@
+diff --git a/finch/libgnt/gntws.h b/finch/libgnt/gntws.h
+index 795921b..bf76e09 100644
+--- a/finch/libgnt/gntws.h
++++ b/finch/libgnt/gntws.h
+@@ -121,21 +121,19 @@ void gnt_ws_remove_widget(GntWS *ws, GntWidget *widget);
   * Hide a widget in a workspace.
   *
   * @param widget  The widget to hide.
@@ -1723,7 +1773,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.h
  
  /**
   * Draw the taskbar in a workspace.
-@@ -155,7 +153,7 @@
+@@ -155,7 +153,7 @@ void gnt_ws_draw_taskbar(GntWS *ws, gboolean reposition);
   *
   * @since 2.0.0 (gnt), 2.1.0 (pidgin)
   */
@@ -1732,7 +1782,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.h
  
  /**
   * Show a workspace.
-@@ -165,7 +163,7 @@
+@@ -165,7 +163,7 @@ void gnt_ws_hide(GntWS *ws, GHashTable *table);
   *
   * @since 2.0.0 (gnt), 2.1.0 (pidgin)
   */
@@ -1741,9 +1791,10 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/gntws.h
  
  /**
   * Get the name of a workspace.
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/wms/Makefile.am
---- a/finch/libgnt/wms/Makefile.am	Fri Jul 06 08:05:14 2012 -0700
-+++ b/finch/libgnt/wms/Makefile.am	Thu Feb 07 11:48:08 2013 -0500
+diff --git a/finch/libgnt/wms/Makefile.am b/finch/libgnt/wms/Makefile.am
+index b72069a..61b37c4 100644
+--- a/finch/libgnt/wms/Makefile.am
++++ b/finch/libgnt/wms/Makefile.am
 @@ -1,13 +1,14 @@
  wms = irssi.la
  if PURPLE_AVAILABLE
@@ -1760,7 +1811,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/wms/Makefile.am
  
  plugin_LTLIBRARIES = \
  	$(wms) \
-@@ -20,6 +21,11 @@
+@@ -20,6 +21,11 @@ irssi_la_LIBADD =  \
    $(GLIB_LIBS) \
    ../libgnt.la
  
@@ -1772,9 +1823,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/wms/Makefile.am
  s_la_SOURCES = s.c
  s_la_LIBADD =  \
    $(GLIB_LIBS) \
-diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/wms/full.c
---- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/finch/libgnt/wms/full.c	Thu Feb 07 11:48:08 2013 -0500
+diff --git a/finch/libgnt/wms/full.c b/finch/libgnt/wms/full.c
+new file mode 100644
+index 0000000..0d7ee7d
+--- /dev/null
++++ b/finch/libgnt/wms/full.c
 @@ -0,0 +1,196 @@
 +#include <stdlib.h>
 +#include <string.h>
@@ -1972,10 +2025,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 finch/libgnt/wms/full.c
 +	return type;
 +}
 +
-diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/conversation.c
---- a/libpurple/conversation.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/libpurple/conversation.c	Thu Feb 07 11:48:08 2013 -0500
-@@ -335,6 +335,8 @@
+diff --git a/libpurple/conversation.c b/libpurple/conversation.c
+index 051ab48..d325047 100644
+--- a/libpurple/conversation.c
++++ b/libpurple/conversation.c
+@@ -335,6 +335,8 @@ purple_conversation_new(PurpleConversationType type, PurpleAccount *account,
  	PurpleConnection *gc;
  	PurpleConversationUiOps *ops;
  	struct _purple_hconv *hc;
@@ -1984,7 +2038,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/conversation.c
  
  	g_return_val_if_fail(type    != PURPLE_CONV_TYPE_UNKNOWN, NULL);
  	g_return_val_if_fail(account != NULL, NULL);
-@@ -386,6 +388,8 @@
+@@ -386,6 +388,8 @@ purple_conversation_new(PurpleConversationType type, PurpleAccount *account,
  	if (type == PURPLE_CONV_TYPE_IM)
  	{
  		PurpleBuddyIcon *icon;
@@ -1993,7 +2047,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/conversation.c
  		conv->u.im = g_new0(PurpleConvIm, 1);
  		conv->u.im->conv = conv;
  		PURPLE_DBUS_REGISTER_POINTER(conv->u.im, PurpleConvIm);
-@@ -398,15 +402,14 @@
+@@ -398,15 +402,14 @@ purple_conversation_new(PurpleConversationType type, PurpleAccount *account,
  			purple_buddy_icon_unref(icon);
  		}
  
@@ -2013,7 +2067,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/conversation.c
  
  		conv->u.chat = g_new0(PurpleConvChat, 1);
  		conv->u.chat->conv = conv;
-@@ -422,11 +425,18 @@
+@@ -422,11 +425,18 @@ purple_conversation_new(PurpleConversationType type, PurpleAccount *account,
  			purple_conv_chat_set_nick(conv->u.chat,
  									purple_account_get_username(account));
  
@@ -2037,7 +2091,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/conversation.c
  	}
  
  	conversations = g_list_prepend(conversations, conv);
-@@ -907,6 +917,7 @@
+@@ -907,6 +917,7 @@ purple_find_conversation_with_account(PurpleConversationType type,
  	switch (type) {
  		case PURPLE_CONV_TYPE_IM:
  		case PURPLE_CONV_TYPE_CHAT:
@@ -2045,10 +2099,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/conversation.c
  			c = g_hash_table_lookup(conversation_cache, &hc);
  			break;
  		case PURPLE_CONV_TYPE_ANY:
-diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
---- a/libpurple/log.c	Fri Jul 06 08:05:14 2012 -0700
-+++ b/libpurple/log.c	Thu Feb 07 11:48:08 2013 -0500
-@@ -51,6 +51,7 @@
+diff --git a/libpurple/log.c b/libpurple/log.c
+index ea583fc..a080ff8 100644
+--- a/libpurple/log.c
++++ b/libpurple/log.c
+@@ -51,6 +51,7 @@ static GHashTable *logsize_users_decayed = NULL;
  
  static void log_get_log_sets_common(GHashTable *sets);
  
@@ -2056,7 +2111,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
  static gsize html_logger_write(PurpleLog *log, PurpleMessageFlags type,
  							  const char *from, time_t time, const char *message);
  static void html_logger_finalize(PurpleLog *log);
-@@ -66,6 +67,7 @@
+@@ -66,6 +67,7 @@ static int old_logger_size (PurpleLog *log);
  static void old_logger_get_log_sets(PurpleLogSetCallback cb, GHashTable *sets);
  static void old_logger_finalize(PurpleLog *log);
  
@@ -2064,7 +2119,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
  static gsize txt_logger_write(PurpleLog *log,
  							 PurpleMessageFlags type,
  							 const char *from, time_t time, const char *message);
-@@ -653,7 +655,7 @@
+@@ -653,7 +655,7 @@ void purple_log_init(void)
  	purple_prefs_add_string("/purple/logging/format", "html");
  
  	html_logger = purple_log_logger_new("html", _("HTML"), 11,
@@ -2073,7 +2128,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
  									  html_logger_write,
  									  html_logger_finalize,
  									  html_logger_list,
-@@ -667,7 +669,7 @@
+@@ -667,7 +669,7 @@ void purple_log_init(void)
  	purple_log_logger_add(html_logger);
  
  	txt_logger = purple_log_logger_new("txt", _("Plain text"), 11,
@@ -2082,16 +2137,16 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
  									 txt_logger_write,
  									 txt_logger_finalize,
  									 txt_logger_list,
-@@ -755,7 +757,7 @@
+@@ -755,7 +757,7 @@ static char *log_get_timestamp(PurpleLog *log, time_t when)
  	char *date;
- 	struct tm tm;
+ 	struct tm *tm;
  
 -	show_date = (log->type == PURPLE_LOG_SYSTEM) || (time(NULL) > when + 20*60);
 +	show_date = TRUE;
  
  	date = purple_signal_emit_return_1(purple_log_get_handle(),
  	                          "log-timestamp",
-@@ -1369,14 +1371,9 @@
+@@ -1369,14 +1371,9 @@ static PurpleLogLogger xml_logger =  {
   ** HTML LOGGER *************
   ****************************/
  
@@ -2107,7 +2162,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
  	PurplePlugin *plugin = purple_find_prpl(purple_account_get_protocol_id(log->account));
  	PurpleLogCommonLoggerData *data = log->logger_data;
  	gsize written = 0;
-@@ -1391,7 +1388,7 @@
+@@ -1391,7 +1388,7 @@ static gsize html_logger_write(PurpleLog *log, PurpleMessageFlags type,
  
  		/* if we can't write to the file, give up before we hurt ourselves */
  		if(!data->file)
@@ -2116,7 +2171,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
  
  		date = purple_date_format_full(localtime(&log->time));
  
-@@ -1410,6 +1407,22 @@
+@@ -1410,6 +1407,22 @@ static gsize html_logger_write(PurpleLog *log, PurpleMessageFlags type,
  		written += fprintf(data->file, "<h3>%s</h3>\n", header);
  		g_free(header);
  	}
@@ -2139,7 +2194,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
  
  	/* if we can't write to the file, give up before we hurt ourselves */
  	if(!data->file)
-@@ -1527,15 +1540,10 @@
+@@ -1527,15 +1540,10 @@ static int html_logger_total_size(PurpleLogType type, const char *name, PurpleAc
   ** PLAIN TEXT LOGGER *******
   ****************************/
  
@@ -2156,7 +2211,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
  	gsize written = 0;
  
  	if (data == NULL) {
-@@ -1551,7 +1559,7 @@
+@@ -1551,7 +1559,7 @@ static gsize txt_logger_write(PurpleLog *log,
  
  		/* if we can't write to the file, give up before we hurt ourselves */
  		if(!data->file)
@@ -2165,7 +2220,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
  
  		if (log->type == PURPLE_LOG_SYSTEM)
  			written += fprintf(data->file, "System log for account %s (%s) connected at %s\n",
-@@ -1562,6 +1570,22 @@
+@@ -1562,6 +1570,22 @@ static gsize txt_logger_write(PurpleLog *log,
  				log->name, purple_date_format_full(localtime(&log->time)),
  				purple_account_get_username(log->account), prpl);
  	}
@@ -2188,10 +2243,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/log.c
  
  	/* if we can't write to the file, give up before we hurt ourselves */
  	if(!data->file)
-diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/media/backend-fs2.h
---- a/libpurple/media/backend-fs2.h	Fri Jul 06 08:05:14 2012 -0700
-+++ b/libpurple/media/backend-fs2.h	Thu Feb 07 11:48:08 2013 -0500
-@@ -60,6 +60,7 @@
+diff --git a/libpurple/media/backend-fs2.h b/libpurple/media/backend-fs2.h
+index 47fb02d..e6d54e4 100644
+--- a/libpurple/media/backend-fs2.h
++++ b/libpurple/media/backend-fs2.h
+@@ -60,6 +60,7 @@ GType purple_media_backend_fs2_get_type(void);
   * Temporary function in order to be able to test while
   * integrating with PurpleMedia
   */
@@ -2199,7 +2255,7 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/media/backend-fs2.h
  #include <gst/gst.h>
  GstElement *purple_media_backend_fs2_get_src(
  		PurpleMediaBackendFs2 *self,
-@@ -71,6 +72,7 @@
+@@ -71,6 +72,7 @@ void purple_media_backend_fs2_set_input_volume(PurpleMediaBackendFs2 *self,
  		const gchar *sess_id, double level);
  void purple_media_backend_fs2_set_output_volume(PurpleMediaBackendFs2 *self,
  		const gchar *sess_id, const gchar *who, double level);
@@ -2207,48 +2263,260 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/media/backend-fs2.h
  /* end tmp */
  #endif /* USE_GSTREAMER */
  
-diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/plugins/Makefile.am
---- a/libpurple/plugins/Makefile.am	Fri Jul 06 08:05:14 2012 -0700
-+++ b/libpurple/plugins/Makefile.am	Thu Feb 07 11:48:08 2013 -0500
-@@ -42,6 +42,8 @@
+diff --git a/libpurple/plugins/Makefile.am b/libpurple/plugins/Makefile.am
+index adc6209..053a6c6 100644
+--- a/libpurple/plugins/Makefile.am
++++ b/libpurple/plugins/Makefile.am
+@@ -42,6 +42,9 @@ psychic_la_LDFLAGS          = -module -avoid-version
  signals_test_la_LDFLAGS		= -module -avoid-version
  simple_la_LDFLAGS			= -module -avoid-version
  statenotify_la_LDFLAGS      = -module -avoid-version
 +statelog_la_LDFLAGS      = -module -avoid-version
 +syncnotify_la_LDFLAGS      = -module -avoid-version
++alertcount_la_LDFLAGS      = -module -avoid-version
  
  # this can't be in a conditional otherwise automake 1.4 yells
  dbus_example_la_LDFLAGS     = -module -avoid-version
-@@ -58,6 +60,8 @@
+@@ -58,6 +61,9 @@ plugin_LTLIBRARIES = \
  	offlinemsg.la       \
  	psychic.la          \
  	statenotify.la      \
 +	statelog.la      \
 +	syncnotify.la      \
++	alertcount.la      \
  	$(DBUS_LTLIB)
  
  noinst_LTLIBRARIES = \
-@@ -89,6 +93,8 @@
+@@ -89,6 +95,9 @@ psychic_la_SOURCES          = psychic.c
  signals_test_la_SOURCES		= signals-test.c
  simple_la_SOURCES			= simple.c
  statenotify_la_SOURCES      = statenotify.c
 +statelog_la_SOURCES      = statelog.c
 +syncnotify_la_SOURCES      = syncnotify.c
++alertcount_la_SOURCES      = alertcount.c
  
  autoaccept_la_LIBADD        = $(GLIB_LIBS)
  buddynote_la_LIBADD         = $(GLIB_LIBS)
-@@ -106,6 +112,8 @@
+@@ -106,6 +115,9 @@ psychic_la_LIBADD           = $(GLIB_LIBS)
  signals_test_la_LIBADD		= $(GLIB_LIBS)
  simple_la_LIBADD			= $(GLIB_LIBS)
  statenotify_la_LIBADD       = $(GLIB_LIBS)
 +statelog_la_LIBADD       = $(GLIB_LIBS)
 +syncnotify_la_LIBADD       = $(GLIB_LIBS)
++alertcount_la_LIBADD       = $(GLIB_LIBS)
  
  if ENABLE_DBUS
  
-diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/plugins/statelog.c
---- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/libpurple/plugins/statelog.c	Thu Feb 07 11:48:08 2013 -0500
+diff --git a/libpurple/plugins/alertcount.c b/libpurple/plugins/alertcount.c
+new file mode 100644
+index 0000000..a3fa6b1
+--- /dev/null
++++ b/libpurple/plugins/alertcount.c
+@@ -0,0 +1,199 @@
++#include "internal.h"
++#include "debug.h"
++#include "plugin.h"
++#include "version.h"
++
++/** Plugin id : type-author-name (to guarantee uniqueness) */
++#define ALERTS_PLUGIN_ID "core-dylex-alertcount"
++
++#define ALERTS_PORT	6652
++
++static int Listener = -1;
++static guint Incoming = 0;
++static int Connection = -1;
++static guint Outgoing = 0;
++static int Count = -1;
++
++static unsigned
++alerts_get_count()
++{
++	const gboolean aggregate = purple_prefs_get_bool("/plugins/core/alertcount/aggregate");
++	unsigned count = 0;
++	GList *l;
++
++	for (l = purple_get_conversations(); l != NULL; l = l->next) {
++		int c = GPOINTER_TO_INT(purple_conversation_get_data((PurpleConversation *)l->data, "unseen-count"));
++		if (aggregate)
++			c = !!c;
++		count += c;
++	}
++	Count = count;
++	return count;
++}
++
++static void
++alerts_outgoing_cb(gpointer data, gint source, PurpleInputCondition cond)
++{
++	unsigned count;
++	unsigned char c;
++
++	if (Outgoing) {
++		purple_input_remove(Outgoing);
++		Outgoing = 0;
++	}
++
++	count = alerts_get_count();
++	if (count > 127)
++		c = 127;
++	else
++		c = count;
++	if (send(Connection, &c, sizeof(c), 0) <= 0) {
++		purple_debug_info("alertcount", "send: %m\n");
++		close(Connection);
++		Connection = -1;
++	}
++}
++
++static void
++alerts_incoming_cb(gpointer data, gint source, PurpleInputCondition cond)
++{
++	struct sockaddr_in addr;
++	socklen_t addrlen = sizeof(addr);
++
++	if (Outgoing) {
++		purple_input_remove(Outgoing);
++		Outgoing = 0;
++	}
++	if (Connection >= 0)
++		close(Connection);
++	if ((Connection = accept(Listener, (struct sockaddr *)&addr, &addrlen)) < 0)
++	{
++		purple_debug_warning("alertcount", "accept: %m\n");
++		return;
++	}
++
++	purple_debug_info("alertcount", "accepted connection from %s:%hu\n", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
++	shutdown(Connection, SHUT_RD);
++	fcntl(Connection, F_SETFL, O_NONBLOCK);
++	fcntl(Connection, F_SETFD, FD_CLOEXEC);
++
++	Outgoing = purple_input_add(Connection, PURPLE_INPUT_WRITE, alerts_outgoing_cb, NULL);
++}
++
++static void
++alerts_conversation_cb(PurpleConversation *conv, PurpleConvUpdateType type, void *data)
++{
++	if (!(type & PURPLE_CONV_UPDATE_UNSEEN))
++		return;
++	if (Connection < 0 || Outgoing)
++		return;
++	if (!Count && !GPOINTER_TO_INT(purple_conversation_get_data(conv, "unseen-count")))
++		return;
++	Outgoing = purple_input_add(Connection, PURPLE_INPUT_WRITE, alerts_outgoing_cb, NULL);
++}
++
++static gboolean
++plugin_load(PurplePlugin *plugin)
++{
++	const int on = 1;
++	const struct sockaddr_in addr = {
++		.sin_family = AF_INET,
++		.sin_port = htons(ALERTS_PORT),
++		.sin_addr = { htonl(INADDR_LOOPBACK) }
++	};
++
++	if ((Listener = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
++		purple_debug_error("alertcount", "socket: %m\n");
++		goto error;
++	}
++	if (setsockopt(Listener, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
++		purple_debug_warning("alertcount", "setsockopt(SO_REUSEADDR): %m\n");
++	if (bind(Listener, (struct sockaddr *)&addr, sizeof(addr)) < 0)
++	{
++		purple_debug_error("alertcount", "bind: %m\n");
++		goto error;
++	}
++	if (listen(Listener, 1) < 0) {
++		purple_debug_error("alertcount", "listen: %m\n");
++		goto error;
++	}
++
++	fcntl(Listener, F_SETFL, O_NONBLOCK);
++	fcntl(Listener, F_SETFD, FD_CLOEXEC);
++
++	Incoming = purple_input_add(Listener, PURPLE_INPUT_READ, alerts_incoming_cb, NULL);
++
++	purple_signal_connect(purple_conversations_get_handle(), "conversation-updated",
++			plugin, PURPLE_CALLBACK(alerts_conversation_cb), NULL);
++
++	return TRUE;
++
++error:
++	if (Listener >= 0) {
++		close(Listener);
++		Listener = -1;
++	}
++	return FALSE;
++}
++
++static gboolean
++plugin_unload(PurplePlugin *plugin)
++{
++	if (Outgoing) {
++		purple_input_remove(Outgoing);
++		Outgoing = 0;
++	}
++	if (Incoming) {
++		purple_input_remove(Incoming);
++		Incoming = 0;
++	}
++	if (Connection >= 0) {
++		close(Connection);
++		Connection = -1;
++	}
++	if (Listener >= 0) {
++		close(Listener);
++		Listener = -1;
++	}
++	return TRUE;
++}
++
++static PurplePluginInfo info =
++{
++	PURPLE_PLUGIN_MAGIC,
++	PURPLE_MAJOR_VERSION,
++	PURPLE_MINOR_VERSION,
++	PURPLE_PLUGIN_STANDARD,                             /**< type           */
++	NULL,                                             /**< ui_requirement */
++	0,                                                /**< flags          */
++	NULL,                                             /**< dependencies   */
++	PURPLE_PRIORITY_DEFAULT,                            /**< priority       */
++
++	ALERTS_PLUGIN_ID,                                 /**< id             */
++	N_("Alert Count Server"),                              /**< name           */
++	DISPLAY_VERSION,                                  /**< version        */
++	                                                  /**  summary        */
++	N_("Exports unseen conversation count to a single network listener."),
++	                                                  /**  description    */
++	N_("Exports unseen conversation count to a single network listener."),
++	"Dylan Simon <dylan@dylex.net>",        /**< author         */
++	NULL,                                     /**< homepage       */
++
++	plugin_load,                                      /**< load           */
++	plugin_unload,                                    /**< unload         */
++	NULL,                                             /**< destroy        */
++
++	NULL,                                             /**< ui_info        */
++	NULL,                                             /**< extra_info     */
++	NULL,
++	NULL
++};
++
++static void
++init_plugin(PurplePlugin *plugin)
++{
++	purple_prefs_add_none("/plugins/core/alertcount");
++	purple_prefs_add_bool("/plugins/core/alertcount/aggregate", TRUE);
++}
++
++PURPLE_INIT_PLUGIN(alertcount, init_plugin, info)
+diff --git a/libpurple/plugins/statelog.c b/libpurple/plugins/statelog.c
+new file mode 100644
+index 0000000..b00065a
+--- /dev/null
++++ b/libpurple/plugins/statelog.c
 @@ -0,0 +1,336 @@
 +#include "internal.h"
 +#include "debug.h"
@@ -2586,9 +2854,11 @@ diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/plugins/statelog.c
 +}
 +
 +PURPLE_INIT_PLUGIN(statelog, init_plugin, info)
-diff -r 4992bd90d8ad -r 7d10911a27d0 libpurple/plugins/syncnotify.c
---- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/libpurple/plugins/syncnotify.c	Thu Feb 07 11:48:08 2013 -0500
+diff --git a/libpurple/plugins/syncnotify.c b/libpurple/plugins/syncnotify.c
+new file mode 100644
+index 0000000..646ed53
+--- /dev/null
++++ b/libpurple/plugins/syncnotify.c
 @@ -0,0 +1,95 @@
 +#include "internal.h"
 +#include "debug.h"
