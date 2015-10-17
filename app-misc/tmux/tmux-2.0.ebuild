@@ -3,13 +3,12 @@
 # $Header: /var/cvsroot/gentoo-x86/app-misc/tmux/tmux-2.0.ebuild,v 1.1 2015/05/10 07:09:00 jlec Exp $
 
 EAPI=5
-
 AUTOTOOLS_AUTORECONF=true
 
 inherit autotools-utils bash-completion-r1 flag-o-matic git-r3
 
 DESCRIPTION="Terminal multiplexer"
-HOMEPAGE="http://tmux.sourceforge.net"
+HOMEPAGE="http://tmux.github.io/"
 
 EGIT_REPO_URI=${EGIT_REPO_URI:-"https://github.com/dylex/xtmux.git"}
 if use X ; then
@@ -23,21 +22,27 @@ SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~amd64-fbsd ~x86-fbsd ~x64-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos"
 IUSE="X debug selinux vim-syntax"
 
-COMMON_DEPEND="
-	>=dev-libs/libevent-2.0.10
+CDEPEND="
+	|| ( =dev-libs/libevent-2.0*
+		 >=dev-libs/libevent-2.1.5-r4 )
+	!sys-apps/utempter
 	sys-libs/ncurses
 	X? (
 		x11-libs/libX11	
 	)"
-DEPEND="${COMMON_DEPEND}
+DEPEND="${CDEPEND}
 	virtual/pkgconfig"
-RDEPEND="${COMMON_DEPEND}
+RDEPEND="${CDEPEND}
 	selinux? ( sec-policy/selinux-screen )
 	vim-syntax? ( || (
 		app-editors/vim
 		app-editors/gvim ) )"
 
-DOCS=( CHANGES FAQ README README.xtmux TODO )
+if use X ; then
+	DOCS=( CHANGES FAQ README README.xtmux TODO )
+else
+	DOCS=( CHANGES FAQ README TODO )
+fi
 
 pkg_setup() {
 	if has_version "<app-misc/tmux-1.9a"; then
