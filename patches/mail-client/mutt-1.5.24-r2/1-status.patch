@@ -1,0 +1,63 @@
+diff -r 0e248f45150b init.h
+--- a/init.h	Fri Jan 22 15:18:51 2016 -0500
++++ b/init.h	Fri Jan 22 15:47:35 2016 -0500
+@@ -3782,6 +3782,7 @@
+   { "to",		SORT_TO },
+   { "score",		SORT_SCORE },
+   { "spam",		SORT_SPAM },
++  { "status",		SORT_STATUS },
+   { NULL,               0 }
+ };
+ 
+@@ -3801,6 +3802,7 @@
+   { "to",		SORT_TO },
+   { "score",		SORT_SCORE },
+   { "spam",		SORT_SPAM },
++  { "status",		SORT_STATUS },
+   { NULL,               0 }
+ };
+ 
+diff -r 0e248f45150b sort.c
+--- a/sort.c	Fri Jan 22 15:18:51 2016 -0500
++++ b/sort.c	Fri Jan 22 15:47:35 2016 -0500
+@@ -219,6 +219,20 @@
+   return (SORTCODE(result));
+ }
+ 
++static int compare_status (const void *a, const void *b)
++{
++  HEADER **pa = (HEADER **) a;
++  HEADER **pb = (HEADER **) b;
++  int result = 0;
++  if (!result) result = (*pb)->deleted - (*pa)->deleted;
++  if (!result) result = (*pb)->old - (*pa)->old;
++  if (!result) result = (*pb)->read - (*pa)->read;
++  if (!result) result = (*pa)->flagged - (*pb)->flagged;
++  if (!result) result = (*pb)->replied - (*pa)->replied;
++  AUXSORT(result,a,b);
++  return (SORTCODE(result));
++}
++
+ sort_t *mutt_get_sort_func (int method)
+ {
+   switch (method & SORT_MASK)
+@@ -241,6 +255,8 @@
+       return (compare_score);
+     case SORT_SPAM:
+       return (compare_spam);
++    case SORT_STATUS:
++      return (compare_status);
+     default:
+       return (NULL);
+   }
+diff -r 0e248f45150b sort.h
+--- a/sort.h	Fri Jan 22 15:18:51 2016 -0500
++++ b/sort.h	Fri Jan 22 15:47:35 2016 -0500
+@@ -31,6 +31,7 @@
+ #define SORT_KEYID	12
+ #define SORT_TRUST	13
+ #define SORT_SPAM	14
++#define SORT_STATUS	15
+ /* dgc: Sort & SortAux are shorts, so I'm bumping these bitflags up from
+  * bits 4 & 5 to bits 8 & 9 to make room for more sort keys in the future. */
+ #define SORT_MASK	0xff
