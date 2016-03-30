@@ -1,4 +1,4 @@
-EAPI=3
+EAPI=5
 
 CABAL_FEATURES="bin"
 inherit darcs haskell-cabal
@@ -14,6 +14,8 @@ KEYWORDS="~amd64"
 IUSE="inotify"
 
 DEPEND="dev-lang/ghc
+	dev-haskell/regex-posix:0
+	dev-haskell/unordered-containers
 	inotify? ( dev-haskell/hinotify )"
 RDEPEND="${DEPEND}"
 
