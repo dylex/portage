@@ -14,8 +14,6 @@ if [[ ${PV} == *9999* ]]; then
 	KEYWORDS=''
 	SRC_URI=''
 	IUSE='experimental'
-	use experimental &&
-		EGIT_BRANCH='next'
 else
 	inherit vcs-snapshot
 	KEYWORDS='~amd64 ~x86 ~amd64-linux ~x86-linux'
@@ -73,6 +71,11 @@ RDEPEND="
 # TODO document what requires the above helpers
 
 PREFIX="${EPREFIX}/usr"
+
+src_unpack() {
+	use experimental &&
+		EGIT_BRANCH='next'
+}
 
 pkg_setup() {
 	python-single-r1_pkg_setup

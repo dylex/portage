@@ -11,11 +11,6 @@ DESCRIPTION="Terminal multiplexer"
 HOMEPAGE="http://tmux.github.io/"
 
 EGIT_REPO_URI=${EGIT_REPO_URI:-"https://github.com/dylex/xtmux.git"}
-if use X ; then
-	EGIT_BRANCH="${PV}"
-else
-    EGIT_BRANCH="nox/${PV}"
-fi
 
 LICENSE="ISC"
 SLOT="0"
@@ -38,11 +33,15 @@ RDEPEND="${CDEPEND}
 		app-editors/vim
 		app-editors/gvim ) )"
 
-if use X ; then
-	DOCS=( CHANGES FAQ README README.xtmux TODO )
-else
-	DOCS=( CHANGES FAQ README TODO )
-fi
+DOCS=( CHANGES FAQ README README.xtmux TODO )
+
+src_unpack() {
+	if use X ; then
+		EGIT_BRANCH="${PV}"
+	else
+		EGIT_BRANCH="nox/${PV}"
+	fi
+}
 
 pkg_setup() {
 	if has_version "<app-misc/tmux-1.9a"; then
