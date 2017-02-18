@@ -14,7 +14,7 @@ SLOT="0"
 KEYWORDS="~amd64"
 IUSE=""
 
-DEPEND=">=x11-libs/gtk+-2 dev-libs/libxml2"
+DEPEND="x11-libs/gtk+:2 dev-libs/libxml2"
 RDEPEND="${DEPEND}"
 
 S="${WORKDIR}/${MY_P}"
