@@ -106,13 +106,6 @@ src_prepare() {
 		sed -i 's/prefix=$(PREFIX)/prefix=$(DESTDIR)\/$(PREFIX)/' Makefile ||
 			die 'Makefile sed for sandbox failed'
 	fi
-
-	# fix QA of uzbl.desktop
-	if [ ${PV} == 9999 ]
-	then
-		sed -i 's/Categories=Application;Network;/Categories=Network;/'	\
-			uzbl.desktop.in || die 'QA compliance of uzbl.desktop.in failed'
-	fi
 }
 
 src_compile() {
