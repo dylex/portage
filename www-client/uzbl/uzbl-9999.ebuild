@@ -8,24 +8,17 @@ PYTHON_COMPAT=( python2_7 )
 
 inherit python-single-r1
 
-if [[ ${PV} == *9999* ]]; then
-	inherit git-2
-	EGIT_REPO_URI=${EGIT_REPO_URI:-'git://github.com/Dieterbe/uzbl.git'}
-	KEYWORDS=''
-	SRC_URI=''
-	IUSE='experimental'
-else
-	inherit vcs-snapshot
-	KEYWORDS='~amd64 ~x86 ~amd64-linux ~x86-linux'
-	SRC_URI="https://github.com/Dieterbe/${PN}/tarball/${PV} -> ${P}.tar.gz"
-fi
+inherit git-2
+EGIT_REPO_URI=${EGIT_REPO_URI:-'git://github.com/Dieterbe/uzbl.git'}
+KEYWORDS=''
+SRC_URI=''
 
 DESCRIPTION='Web interface tools which adhere to the unix philosophy.'
 HOMEPAGE='http://www.uzbl.org'
 
 LICENSE='LGPL-2.1 MPL-1.1'
 SLOT='0'
-IUSE+=' gtk3 +browser helpers +tabbed vim-syntax'
+IUSE='gtk3 +browser helpers +tabbed vim-syntax'
 
 REQUIRED_USE='tabbed? ( browser )'
 
@@ -71,11 +64,6 @@ RDEPEND="
 # TODO document what requires the above helpers
 
 PREFIX="${EPREFIX}/usr"
-
-src_unpack() {
-	use experimental &&
-		EGIT_BRANCH='next'
-}
 
 pkg_setup() {
 	python-single-r1_pkg_setup
