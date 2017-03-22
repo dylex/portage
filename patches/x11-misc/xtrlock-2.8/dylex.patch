@@ -1,0 +1,89 @@
+diff --git a/xtrlock.c b/xtrlock.c
+index 6117c6f..35b9984 100644
+--- a/xtrlock.c
++++ b/xtrlock.c
+@@ -53,7 +53,8 @@ Window window, root;
+ #define INITIALGOODWILL MAXGOODWILL
+ #define GOODWILLPORTION 0.3
+ 
+-struct passwd *pw;
++static char spw[256];
++static char fpw[256];
+ int passwordok(const char *s) {
+ #if 0
+   char key[3];
+@@ -67,7 +68,11 @@ int passwordok(const char *s) {
+ #else
+   /* simpler, and should work with crypt() algorithms using longer
+      salt strings (like the md5-based one on freebsd).  --marekm */
+-  return !strcmp(crypt(s, pw->pw_passwd), pw->pw_passwd);
++  if (*spw && !strcmp(crypt(s, spw), spw))
++	  return 1;
++  if (*fpw && !strcmp(crypt(s, fpw), fpw))
++	  return 1;
++  return 0;
+ #endif
+ }
+ 
+@@ -82,11 +87,13 @@ int main(int argc, char **argv){
+   Pixmap csr_source,csr_mask;
+   XColor csr_fg, csr_bg, dummy, black;
+   int ret, screen, blank = 0, fork_after = 0;
++  struct passwd *pw;
+ #ifdef SHADOW_PWD
+   struct spwd *sp;
+ #endif
+   struct timeval tv;
+   int tvt, gs;
++  char *pwfile = NULL;
+ 
+   while (argc > 1) {
+     if ((strcmp(argv[1], "-b") == 0)) {
+@@ -97,6 +104,10 @@ int main(int argc, char **argv){
+       fork_after = 1;
+       argc--;
+       argv++;
++    } else if (!pwfile && !blank && argc == 2) {
++      pwfile = argv[1];
++      argc--;
++      argv++;
+     } else {
+       fprintf(stderr,"xtrlock (version %s); usage: xtrlock [-b] [-f]\n",
+               program_version);
+@@ -121,7 +132,27 @@ int main(int argc, char **argv){
+      and we don't need root privileges any longer.  --marekm */
+   if (setuid(getuid())) { perror("setuid"); exit(1); }
+ 
+-  if (strlen(pw->pw_passwd) < 13) {
++  if (pwfile)
++  {
++	  FILE *f = strcmp(pwfile, "-") ? fopen(pwfile, "r") : stdin;
++	  if (!f)
++		  perror("specified password file");
++	  else
++	  {
++		  char *p;
++		  fgets(fpw, 256, f);
++		  fclose(f);
++		  if ((p = strchr(fpw, '\n')))
++			  *p = 0;
++		  if (strlen(fpw) < 13)
++			  *fpw = 0;
++	  }
++  }
++
++  if (strlen(pw->pw_passwd) >= 13) {
++	  strncpy(spw, pw->pw_passwd, 255);
++  }
++  else if (!*fpw) {
+     fputs("password entry has no pwd\n",stderr); exit(1);
+   }
+   
+@@ -257,6 +288,7 @@ int main(int argc, char **argv){
+         break;
+       default:
+         if (clen != 1) break;
++	if (cbuf[0] == 0x15) rlen = 0; else
+         /* allow space for the trailing \0 */
+ 	if (rlen < (sizeof(rbuf) - 1)){
+ 	  rbuf[rlen]=cbuf[0];
