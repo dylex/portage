@@ -1,6 +1,0 @@
-post_src_unpack() {
-        cd "${S}"
-        for p in /etc/portage/patches/${CATEGORY}/${P}/*.patch ; do
-                patch -p1 -i "$p" || die "patch failed"
-        done
-}
