@@ -86,7 +86,7 @@ src_install() {
 		doins "${FILESDIR}"/tmux.vim
 	fi
 
-	use X && tic -s -o "${D}"/usr/share/terminfo examples/xtmux.terminfo
+	use X && tic -s -o "${D}"/usr/share/terminfo xtmux.terminfo
 }
 
 pkg_postinst() {
