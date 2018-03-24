@@ -1,5 +1,31 @@
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000000..42193c7bd7
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,20 @@
++Makefile
++Makefile.in
++/aclocal.m4
++/autom4te.cache/
++/compile
++/config.cache
++/config.guess
++/config.h.in
++/config.log
++/config.status
++/config.sub
++/configure
++/depcomp
++/install-sh
++/intltool-*
++/ltmain.sh
++/missing
++/po/Makefile.in.in
++/po/Makefile.in.in.bak
++/test-driver
 diff --git a/Makefile.am b/Makefile.am
-index 87bfa1c..b305660 100644
+index 587931147c..ef8b83604d 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -1,4 +1,4 @@
@@ -8,17 +34,17 @@ index 87bfa1c..b305660 100644
  		COPYRIGHT \
  		ChangeLog.API \
  		ChangeLog.win32 \
-@@ -145,3 +145,5 @@ distuninstallcheck_listfiles = \
+@@ -141,3 +141,5 @@ distuninstallcheck_listfiles = \
  
- DISTCLEANFILES= $(DESKTOP_FILE) libpurple/gconf/purple.schemas intltool-extract \
- 			intltool-merge intltool-update
+ DISTCLEANFILES= intltool-extract intltool-merge intltool-update \
+ 			package_revision_raw.txt
 +
 +ACLOCAL_AMFLAGS = -I m4
 diff --git a/configure.ac b/configure.ac
-index 7575d49..4e5374c 100644
+index b8acd2a67b..9d890b5531 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1433,7 +1433,7 @@ AC_ARG_WITH([python],
+@@ -1488,7 +1488,7 @@ AC_ARG_WITH([python],
  
  if test "x$enable_dbus" = "xyes" || test "x$enable_consoleui" = "xyes" ; then
  	if test -z "$PYTHON" -o "x$PYTHON" = "xyes"; then
@@ -28,7 +54,7 @@ index 7575d49..4e5374c 100644
  
  	if test x"$PYTHON" = x"no" ; then
 diff --git a/finch/Makefile.am b/finch/Makefile.am
-index 85502d3..49776c5 100644
+index 95976e8d49..8d159e333f 100644
 --- a/finch/Makefile.am
 +++ b/finch/Makefile.am
 @@ -25,6 +25,7 @@ finch_SOURCES = \
@@ -48,7 +74,7 @@ index 85502d3..49776c5 100644
  	gntmedia.h \
  	gntnotify.h \
 diff --git a/finch/gntblist.c b/finch/gntblist.c
-index b2c62c5..c8af2db 100644
+index b2c62c55d8..c8af2dba27 100644
 --- a/finch/gntblist.c
 +++ b/finch/gntblist.c
 @@ -1322,6 +1322,13 @@ toggle_show_offline(GntMenuItem *item, gpointer buddy)
@@ -146,7 +172,7 @@ index b2c62c5..c8af2db 100644
  	gnt_menuitem_set_id(GNT_MENU_ITEM(item), "join-chat");
  	gnt_menu_add_item(GNT_MENU(sub), item);
 diff --git a/finch/gntconv.c b/finch/gntconv.c
-index 04c8828..45e01fd 100644
+index 04c882857a..45e01fd38e 100644
 --- a/finch/gntconv.c
 +++ b/finch/gntconv.c
 @@ -44,6 +44,7 @@
@@ -202,7 +228,7 @@ index 04c8828..45e01fd 100644
  			purple_conv_im_get_typing_state(PURPLE_CONV_IM(conv)) == PURPLE_TYPING) {
 diff --git a/finch/gntimhtml.c b/finch/gntimhtml.c
 new file mode 100644
-index 0000000..56dc007
+index 0000000000..56dc007580
 --- /dev/null
 +++ b/finch/gntimhtml.c
 @@ -0,0 +1,477 @@
@@ -685,7 +711,7 @@ index 0000000..56dc007
 +
 diff --git a/finch/gntimhtml.h b/finch/gntimhtml.h
 new file mode 100644
-index 0000000..7760353
+index 0000000000..7760353951
 --- /dev/null
 +++ b/finch/gntimhtml.h
 @@ -0,0 +1,48 @@
@@ -738,19 +764,19 @@ index 0000000..7760353
 +
 +#endif /* _GNT_IMHTML_H */
 diff --git a/finch/gntnotify.c b/finch/gntnotify.c
-index 80b9be1..7f6c1a5 100644
+index f32650d2b5..081490a64d 100644
 --- a/finch/gntnotify.c
 +++ b/finch/gntnotify.c
-@@ -96,7 +96,7 @@ finch_notify_message(PurpleNotifyMsgType type, const char *title,
- 			switch (type) {
- 				case PURPLE_NOTIFY_FORMATTED:
- 					plain = purple_markup_strip_html(secondary);
--					if (gnt_util_parse_xhtml_to_textview(secondary, GNT_TEXT_VIEW(msg)))
-+					if (gnt_util_parse_xhtml_to_textview(secondary, GNT_TEXT_VIEW(msg), 0))
- 						break;
- 					/* Fallthrough */
- 				default:
-@@ -344,7 +344,7 @@ finch_notify_userinfo(PurpleConnection *gc, const char *who, PurpleNotifyUserInf
+@@ -93,7 +93,7 @@ finch_notify_common(PurpleNotifyType ntype, PurpleNotifyMsgType msgtype,
+ 			gnt_text_view_set_flag(GNT_TEXT_VIEW(msg), GNT_TEXT_VIEW_TOP_ALIGN | GNT_TEXT_VIEW_NO_SCROLL);
+ 
+ 			plain = purple_markup_strip_html(secondary);
+-			if (!gnt_util_parse_xhtml_to_textview(secondary, GNT_TEXT_VIEW(msg)))
++			if (!gnt_util_parse_xhtml_to_textview(secondary, GNT_TEXT_VIEW(msg), 0))
+ 				gnt_text_view_append_text_with_flags(GNT_TEXT_VIEW(msg), plain, sf);
+ 
+ 			gnt_text_view_attach_scroll_widget(GNT_TEXT_VIEW(msg), button);
+@@ -348,7 +348,7 @@ finch_notify_userinfo(PurpleConnection *gc, const char *who, PurpleNotifyUserInf
  		gnt_widget_get_size(GNT_WIDGET(msg), &tvw, &tvh);
  
  		gnt_text_view_clear(msg);
@@ -760,7 +786,7 @@ index 80b9be1..7f6c1a5 100644
  		gnt_text_view_scroll(msg, 0);
  		gnt_util_get_text_bound(strip, &ntvw, &ntvh);
 diff --git a/finch/gntprefs.c b/finch/gntprefs.c
-index 02ebf6a..2ae240c 100644
+index 308962d895..673ca5c910 100644
 --- a/finch/gntprefs.c
 +++ b/finch/gntprefs.c
 @@ -53,11 +53,11 @@ void finch_prefs_init()
@@ -776,7 +802,7 @@ index 02ebf6a..2ae240c 100644
  }
  
  void finch_prefs_update_old()
-@@ -190,6 +190,7 @@ static Prefs blist[] =
+@@ -192,6 +192,7 @@ static Prefs blist[] =
  static Prefs convs[] =
  {
  	{PURPLE_PREF_BOOLEAN, "/finch/conversations/timestamps", N_("Show Timestamps"), NULL},
@@ -785,7 +811,7 @@ index 02ebf6a..2ae240c 100644
  	{PURPLE_PREF_NONE, NULL, NULL, NULL}
  };
 diff --git a/finch/libgnt/Makefile.am b/finch/libgnt/Makefile.am
-index 07533e2..b356273 100644
+index 07533e2474..b356273993 100644
 --- a/finch/libgnt/Makefile.am
 +++ b/finch/libgnt/Makefile.am
 @@ -10,8 +10,8 @@ noinst_HEADERS = gntinternal.h
@@ -815,7 +841,7 @@ index 07533e2..b356273 100644
  	$(libgnt_la_headers)
  
 diff --git a/finch/libgnt/gntcolors.c b/finch/libgnt/gntcolors.c
-index 082be1d..a1b6dd1 100644
+index 9e271433a0..f51d5e2a4e 100644
 --- a/finch/libgnt/gntcolors.c
 +++ b/finch/libgnt/gntcolors.c
 @@ -38,22 +38,26 @@
@@ -1027,7 +1053,7 @@ index 082be1d..a1b6dd1 100644
  	return custom_type++;
  }
 diff --git a/finch/libgnt/gntcolors.h b/finch/libgnt/gntcolors.h
-index 6904b5e..24e09b8 100644
+index 6904b5e797..24e09b812e 100644
 --- a/finch/libgnt/gntcolors.h
 +++ b/finch/libgnt/gntcolors.h
 @@ -34,7 +34,16 @@
@@ -1074,7 +1100,7 @@ index 6904b5e..24e09b8 100644
 +
  #endif
 diff --git a/finch/libgnt/gnttextview.c b/finch/libgnt/gnttextview.c
-index cea267b..bad6058 100644
+index 31456805cc..eb3a3cb384 100644
 --- a/finch/libgnt/gnttextview.c
 +++ b/finch/libgnt/gnttextview.c
 @@ -74,6 +74,13 @@ text_view_contains(GntTextView *view, const char *str)
@@ -1161,7 +1187,7 @@ index cea267b..bad6058 100644
  	else if ((flags & A_COLOR) == 0)
  		fl |= gnt_color_pair(GNT_COLOR_NORMAL);
 diff --git a/finch/libgnt/gntutils.c b/finch/libgnt/gntutils.c
-index 1e41c36..23bb1ac 100644
+index 1e41c363c9..23bb1ac821 100644
 --- a/finch/libgnt/gntutils.c
 +++ b/finch/libgnt/gntutils.c
 @@ -41,6 +41,7 @@
@@ -1266,7 +1292,7 @@ index 1e41c36..23bb1ac 100644
  	return ret;
  #endif
 diff --git a/finch/libgnt/gntutils.h b/finch/libgnt/gntutils.h
-index 7517d74..6c532fe 100644
+index 7517d7420c..6c532fe557 100644
 --- a/finch/libgnt/gntutils.h
 +++ b/finch/libgnt/gntutils.h
 @@ -142,7 +142,7 @@ void gnt_util_parse_widgets(const char *string, int num, ...);
@@ -1279,7 +1305,7 @@ index 7517d74..6c532fe 100644
  /**
   * Make some keypress activate a button when some key is pressed with 'wid' in focus.
 diff --git a/finch/libgnt/gntwidget.h b/finch/libgnt/gntwidget.h
-index e25d58f..9ed6b13 100644
+index e25d58f711..9ed6b13c26 100644
 --- a/finch/libgnt/gntwidget.h
 +++ b/finch/libgnt/gntwidget.h
 @@ -66,6 +66,7 @@ typedef enum _GntWidgetFlags
@@ -1299,7 +1325,7 @@ index e25d58f..9ed6b13 100644
      void (*gnt_reserved1)(void);
      void (*gnt_reserved2)(void);
 diff --git a/finch/libgnt/gntwm.c b/finch/libgnt/gntwm.c
-index dcd72fc..1a602d8 100644
+index 310d6c621c..21c18b439f 100644
 --- a/finch/libgnt/gntwm.c
 +++ b/finch/libgnt/gntwm.c
 @@ -123,14 +123,20 @@ g_list_bring_to_front(GList *list, gpointer data)
@@ -1382,7 +1408,7 @@ index dcd72fc..1a602d8 100644
  	if (!node)
  		return TRUE;
  
-@@ -894,6 +902,7 @@ shift_window(GntWM *wm, GntWidget *widget, int dir)
+@@ -900,6 +908,7 @@ shift_window(GntWM *wm, GntWidget *widget, int dir)
  	all = g_list_delete_link(all, list);
  	wm->cws->list = all;
  	gnt_ws_draw_taskbar(wm->cws, FALSE);
@@ -1390,7 +1416,7 @@ index dcd72fc..1a602d8 100644
  	if (wm->cws->ordered) {
  		GntWidget *w = wm->cws->ordered->data;
  		GntNode *node = g_hash_table_lookup(wm->nodes, w);
-@@ -901,6 +910,7 @@ shift_window(GntWM *wm, GntWidget *widget, int dir)
+@@ -907,6 +916,7 @@ shift_window(GntWM *wm, GntWidget *widget, int dir)
  		update_panels();
  		doupdate();
  	}
@@ -1398,7 +1424,7 @@ index dcd72fc..1a602d8 100644
  }
  
  static gboolean
-@@ -1054,7 +1064,7 @@ window_reverse(GntWidget *win, gboolean set, GntWM *wm)
+@@ -1060,7 +1070,7 @@ window_reverse(GntWidget *win, gboolean set, GntWM *wm)
  	for (i = 0; i < h; i += reverse_char(d, i, 0, set));
  	for (i = 0; i < h; i += reverse_char(d, i, w-1, set));
  
@@ -1407,7 +1433,7 @@ index dcd72fc..1a602d8 100644
  	update_screen(wm);
  }
  
-@@ -1123,14 +1133,16 @@ refresh_screen(GntBindable *bindable, GList *null)
+@@ -1129,14 +1139,16 @@ refresh_screen(GntBindable *bindable, GList *null)
  	endwin();
  	refresh();
  
@@ -1425,7 +1451,7 @@ index dcd72fc..1a602d8 100644
  
  	gnt_ws_draw_taskbar(wm->cws, TRUE);
  	update_screen(wm);
-@@ -1364,11 +1376,9 @@ help_for_widget(GntBindable *bindable, GList *null)
+@@ -1373,11 +1385,9 @@ help_for_widget(GntBindable *bindable, GList *null)
  }
  
  static void
@@ -1439,7 +1465,7 @@ index dcd72fc..1a602d8 100644
  }
  
  static void
-@@ -1376,10 +1386,10 @@ gnt_wm_destroy(GObject *obj)
+@@ -1385,10 +1395,10 @@ gnt_wm_destroy(GObject *obj)
  {
  	GntWM *wm = GNT_WM(obj);
  	GList *list = NULL;
@@ -1452,7 +1478,7 @@ index dcd72fc..1a602d8 100644
  	wm->nodes = NULL;
  
  	while (wm->workspaces) {
-@@ -1637,9 +1647,9 @@ gnt_wm_switch_workspace(GntWM *wm, gint n)
+@@ -1656,9 +1666,9 @@ gnt_wm_switch_workspace(GntWM *wm, gint n)
  		gnt_widget_destroy(wm->_list.window);
  	}
  	ensure_normal_mode(wm);
@@ -1464,7 +1490,7 @@ index dcd72fc..1a602d8 100644
  
  	gnt_ws_draw_taskbar(wm->cws, TRUE);
  	update_screen(wm);
-@@ -1687,7 +1697,7 @@ gnt_wm_widget_move_workspace(GntWM *wm, GntWS *neww, GntWidget *widget)
+@@ -1706,7 +1716,7 @@ gnt_wm_widget_move_workspace(GntWM *wm, GntWS *neww, GntWidget *widget)
  	GntNode *node;
  	if (!oldw || oldw == neww)
  		return;
@@ -1473,7 +1499,7 @@ index dcd72fc..1a602d8 100644
  	if (node && node->ws == neww)
  		return;
  
-@@ -1697,9 +1707,9 @@ gnt_wm_widget_move_workspace(GntWM *wm, GntWS *neww, GntWidget *widget)
+@@ -1716,9 +1726,9 @@ gnt_wm_widget_move_workspace(GntWM *wm, GntWS *neww, GntWidget *widget)
  	gnt_ws_remove_widget(oldw, widget);
  	gnt_ws_add_widget(neww, widget);
  	if (neww == wm->cws) {
@@ -1485,7 +1511,7 @@ index dcd72fc..1a602d8 100644
  	}
  }
  
-@@ -1811,9 +1821,15 @@ gnt_wm_new_window_real(GntWM *wm, GntWidget *widget)
+@@ -1830,9 +1840,15 @@ gnt_wm_new_window_real(GntWM *wm, GntWidget *widget)
  	node->me = widget;
  	node->scroll = 0;
  
@@ -1503,7 +1529,7 @@ index dcd72fc..1a602d8 100644
  
  	transient = !!GNT_WIDGET_IS_FLAG_SET(node->me, GNT_WIDGET_TRANSIENT);
  
-@@ -1868,7 +1884,7 @@ gnt_wm_new_window_real(GntWM *wm, GntWidget *widget)
+@@ -1889,7 +1905,7 @@ gnt_wm_new_window_real(GntWM *wm, GntWidget *widget)
  			gnt_widget_set_focus(node->me, FALSE);
  			gnt_widget_set_urgent(node->me);
  			if (wm->cws != ws)
@@ -1512,7 +1538,7 @@ index dcd72fc..1a602d8 100644
  		}
  	}
  }
-@@ -1879,7 +1895,7 @@ void gnt_wm_new_window(GntWM *wm, GntWidget *widget)
+@@ -1900,7 +1916,7 @@ void gnt_wm_new_window(GntWM *wm, GntWidget *widget)
  		widget = widget->parent;
  
  	if (GNT_WIDGET_IS_FLAG_SET(widget, GNT_WIDGET_INVISIBLE) ||
@@ -1521,7 +1547,7 @@ index dcd72fc..1a602d8 100644
  		update_screen(wm);
  		return;
  	}
-@@ -1924,11 +1940,16 @@ void gnt_wm_window_close(GntWM *wm, GntWidget *widget)
+@@ -1945,11 +1961,16 @@ void gnt_wm_window_close(GntWM *wm, GntWidget *widget)
  
  	s = gnt_wm_widget_find_workspace(wm, widget);
  
@@ -1540,7 +1566,7 @@ index dcd72fc..1a602d8 100644
  
  	if (wm->windows) {
  		gnt_tree_remove(GNT_TREE(wm->windows->tree), widget);
-@@ -2079,13 +2100,13 @@ gboolean gnt_wm_process_input(GntWM *wm, const char *keys)
+@@ -2100,13 +2121,13 @@ gboolean gnt_wm_process_input(GntWM *wm, const char *keys)
  static void
  gnt_wm_win_resized(GntWM *wm, GntNode *node)
  {
@@ -1556,7 +1582,7 @@ index dcd72fc..1a602d8 100644
  }
  
  void gnt_wm_resize_window(GntWM *wm, GntWidget *widget, int width, int height)
-@@ -2096,7 +2117,7 @@ void gnt_wm_resize_window(GntWM *wm, GntWidget *widget, int width, int height)
+@@ -2117,7 +2138,7 @@ void gnt_wm_resize_window(GntWM *wm, GntWidget *widget, int width, int height)
  
  	while (widget->parent)
  		widget = widget->parent;
@@ -1565,7 +1591,7 @@ index dcd72fc..1a602d8 100644
  	if (!node)
  		return;
  
-@@ -2167,7 +2188,7 @@ void gnt_wm_move_window(GntWM *wm, GntWidget *widget, int x, int y)
+@@ -2188,7 +2209,7 @@ void gnt_wm_move_window(GntWM *wm, GntWidget *widget, int x, int y)
  
  	while (widget->parent)
  		widget = widget->parent;
@@ -1574,7 +1600,7 @@ index dcd72fc..1a602d8 100644
  	if (!node)
  		return;
  
-@@ -2198,7 +2219,7 @@ void gnt_wm_move_window(GntWM *wm, GntWidget *widget, int x, int y)
+@@ -2219,7 +2240,7 @@ void gnt_wm_move_window(GntWM *wm, GntWidget *widget, int x, int y)
  static void
  gnt_wm_give_focus(GntWM *wm, GntWidget *widget)
  {
@@ -1583,7 +1609,7 @@ index dcd72fc..1a602d8 100644
  
  	if (!node)
  		return;
-@@ -2216,7 +2237,7 @@ gnt_wm_give_focus(GntWM *wm, GntWidget *widget)
+@@ -2237,7 +2258,7 @@ gnt_wm_give_focus(GntWM *wm, GntWidget *widget)
  	top_panel(node->panel);
  
  	if (wm->_list.window) {
@@ -1592,7 +1618,7 @@ index dcd72fc..1a602d8 100644
  		top_panel(nd->panel);
  	}
  	gnt_ws_draw_taskbar(wm->cws, FALSE);
-@@ -2237,7 +2258,7 @@ void gnt_wm_update_window(GntWM *wm, GntWidget *widget)
+@@ -2258,7 +2279,7 @@ void gnt_wm_update_window(GntWM *wm, GntWidget *widget)
  	}
  
  	ws = gnt_wm_widget_find_workspace(wm, widget);
@@ -1602,7 +1628,7 @@ index dcd72fc..1a602d8 100644
  		gnt_wm_new_window(wm, widget);
  	} else
 diff --git a/finch/libgnt/gntwm.h b/finch/libgnt/gntwm.h
-index 4d8ace2..9766058 100644
+index 4d8ace2428..97660582fe 100644
 --- a/finch/libgnt/gntwm.h
 +++ b/finch/libgnt/gntwm.h
 @@ -93,7 +93,7 @@ struct _GntWM
@@ -1615,7 +1641,7 @@ index 4d8ace2..9766058 100644
  	GHashTable *title_places;    /* window title -> ws */
  
 diff --git a/finch/libgnt/gntws.c b/finch/libgnt/gntws.c
-index 5695538..1ad2575 100644
+index d8d35c1ed0..c081c5c68a 100644
 --- a/finch/libgnt/gntws.c
 +++ b/finch/libgnt/gntws.c
 @@ -30,10 +30,10 @@
@@ -1650,7 +1676,7 @@ index 5695538..1ad2575 100644
  	}
  }
  
-@@ -72,15 +73,22 @@ gnt_ws_draw_taskbar(GntWS *ws, gboolean reposition)
+@@ -74,15 +75,22 @@ gnt_ws_draw_taskbar(GntWS *ws, gboolean reposition)
  	wbkgdset(taskbar, '\0' | gnt_color_pair(GNT_COLOR_NORMAL));
  	werase(taskbar);
  
@@ -1675,7 +1701,7 @@ index 5695538..1ad2575 100644
  		if (w == ws->ordered->data) {
  			/* This is the current window in focus */
  			color = GNT_COLOR_TITLE;
-@@ -99,6 +107,7 @@ gnt_ws_draw_taskbar(GntWS *ws, gboolean reposition)
+@@ -101,6 +109,7 @@ gnt_ws_draw_taskbar(GntWS *ws, gboolean reposition)
  		mvwprintw(taskbar, 0, width * i, "%s", title ? C_(title) : "<gnt>");
  		if (i)
  			mvwaddch(taskbar, 0, width *i - 1, ACS_VLINE | A_STANDOUT | gnt_color_pair(GNT_COLOR_NORMAL));
@@ -1683,7 +1709,7 @@ index 5695538..1ad2575 100644
  	}
  	wrefresh(taskbar);
  }
-@@ -136,27 +145,27 @@ gnt_ws_set_name(GntWS *ws, const gchar *name)
+@@ -138,27 +147,27 @@ gnt_ws_set_name(GntWS *ws, const gchar *name)
  }
  
  void
@@ -1720,7 +1746,7 @@ index 5695538..1ad2575 100644
  
  GType
 diff --git a/finch/libgnt/gntws.h b/finch/libgnt/gntws.h
-index 795921b..bf76e09 100644
+index 795921b196..bf76e09696 100644
 --- a/finch/libgnt/gntws.h
 +++ b/finch/libgnt/gntws.h
 @@ -121,21 +121,19 @@ void gnt_ws_remove_widget(GntWS *ws, GntWidget *widget);
@@ -1766,7 +1792,7 @@ index 795921b..bf76e09 100644
  /**
   * Get the name of a workspace.
 diff --git a/finch/libgnt/wms/Makefile.am b/finch/libgnt/wms/Makefile.am
-index b72069a..61b37c4 100644
+index b72069a3d8..61b37c4944 100644
 --- a/finch/libgnt/wms/Makefile.am
 +++ b/finch/libgnt/wms/Makefile.am
 @@ -1,13 +1,14 @@
@@ -1799,7 +1825,7 @@ index b72069a..61b37c4 100644
    $(GLIB_LIBS) \
 diff --git a/finch/libgnt/wms/full.c b/finch/libgnt/wms/full.c
 new file mode 100644
-index 0000000..0d7ee7d
+index 0000000000..0d7ee7dead
 --- /dev/null
 +++ b/finch/libgnt/wms/full.c
 @@ -0,0 +1,196 @@
@@ -2000,7 +2026,7 @@ index 0000000..0d7ee7d
 +}
 +
 diff --git a/libpurple/conversation.c b/libpurple/conversation.c
-index 051ab48..d325047 100644
+index 8a39b600d4..b1c56eee59 100644
 --- a/libpurple/conversation.c
 +++ b/libpurple/conversation.c
 @@ -335,6 +335,8 @@ purple_conversation_new(PurpleConversationType type, PurpleAccount *account,
@@ -2074,7 +2100,7 @@ index 051ab48..d325047 100644
  			break;
  		case PURPLE_CONV_TYPE_ANY:
 diff --git a/libpurple/log.c b/libpurple/log.c
-index a982ea5..705b8bf 100644
+index ea583fce48..a080ff8581 100644
 --- a/libpurple/log.c
 +++ b/libpurple/log.c
 @@ -51,6 +51,7 @@ static GHashTable *logsize_users_decayed = NULL;
@@ -2218,7 +2244,7 @@ index a982ea5..705b8bf 100644
  	/* if we can't write to the file, give up before we hurt ourselves */
  	if(!data->file)
 diff --git a/libpurple/media/backend-fs2.h b/libpurple/media/backend-fs2.h
-index 47fb02d..e6d54e4 100644
+index 47fb02dac5..e6d54e4237 100644
 --- a/libpurple/media/backend-fs2.h
 +++ b/libpurple/media/backend-fs2.h
 @@ -60,6 +60,7 @@ GType purple_media_backend_fs2_get_type(void);
@@ -2238,7 +2264,7 @@ index 47fb02d..e6d54e4 100644
  #endif /* USE_GSTREAMER */
  
 diff --git a/libpurple/plugins/Makefile.am b/libpurple/plugins/Makefile.am
-index adc6209..053a6c6 100644
+index adc6209773..053a6c6680 100644
 --- a/libpurple/plugins/Makefile.am
 +++ b/libpurple/plugins/Makefile.am
 @@ -42,6 +42,9 @@ psychic_la_LDFLAGS          = -module -avoid-version
@@ -2283,10 +2309,11 @@ index adc6209..053a6c6 100644
  
 diff --git a/libpurple/plugins/alertcount.c b/libpurple/plugins/alertcount.c
 new file mode 100644
-index 0000000..a3fa6b1
+index 0000000000..e9901bda27
 --- /dev/null
 +++ b/libpurple/plugins/alertcount.c
-@@ -0,0 +1,199 @@
+@@ -0,0 +1,322 @@
++#define _GNU_SOURCE
 +#include "internal.h"
 +#include "debug.h"
 +#include "plugin.h"
@@ -2295,26 +2322,92 @@ index 0000000..a3fa6b1
 +/** Plugin id : type-author-name (to guarantee uniqueness) */
 +#define ALERTS_PLUGIN_ID "core-dylex-alertcount"
 +
-+#define ALERTS_PORT	6652
-+
 +static int Listener = -1;
 +static guint Incoming = 0;
 +static int Connection = -1;
 +static guint Outgoing = 0;
 +static int Count = -1;
 +
++#ifdef ACTIVITY
++static struct activity {
++	struct activity *next;
++	PurpleConversation *conv;
++	uint16_t count;
++	uint8_t ident;
++} *Activity = NULL;
++#endif
++
++static gboolean
++conversation_ignore(PurpleConversation *conv)
++{
++	return !strcmp(conv->name, "slackbot")
++		|| !strcmp(conv->name, "NickServ");
++}
++
++static uint8_t
++conversation_ident(PurpleConversation *conv)
++{
++	unsigned h;
++	/* hack to get rid of variables resource markers (jabber only?) */
++	char *p = strchrnul(strchrnul(conv->name, '@'), '/');
++	char o = *p;
++	*p = '\0';
++	h = g_str_hash(conv->name);
++	*p = o;
++	while (!(h & 0x7F) && h)
++		h >>= 7;
++	if (!h)
++		h = 0x7F;
++	return (conv->type << 7) | (h & 0x7F);
++}
++
++#ifdef ACTIVITY
++static void
++activity_update(PurpleConversation *conv, int count)
++{
++	struct activity **p, *a;
++	for (p = &Activity; *p && (*p)->conv != conv; p = &(*p)->next);
++	if ((a = *p)) {
++		if (count)
++			a->count = count;
++		else {
++			*p = a->next;
++			g_slice_free(struct activity, a);
++		}
++	} else if (count) {
++		a = *p = g_slice_new(struct activity);
++		a->next = NULL;
++		a->conv = conv;
++		a->count = count;
++		a->ident = conversation_ident(conv);
++	}
++}
++#endif
++
 +static unsigned
-+alerts_get_count()
++alerts_get_count(uint8_t *buf, size_t buflen)
 +{
 +	const gboolean aggregate = purple_prefs_get_bool("/plugins/core/alertcount/aggregate");
 +	unsigned count = 0;
 +	GList *l;
++	if (!aggregate)
++		buflen &= ~1;
 +
 +	for (l = purple_get_conversations(); l != NULL; l = l->next) {
-+		int c = GPOINTER_TO_INT(purple_conversation_get_data((PurpleConversation *)l->data, "unseen-count"));
-+		if (aggregate)
-+			c = !!c;
-+		count += c;
++		PurpleConversation *conv = (PurpleConversation *)l->data;
++		if (conversation_ignore(conv))
++			continue;
++		int c = GPOINTER_TO_INT(purple_conversation_get_data(conv, "unseen-count"));
++		if (!c)
++			continue;
++		if (count < buflen) {
++			buf[count++] = conversation_ident(conv);
++			if (!aggregate)
++				buf[count++] = c;
++		} else if (aggregate)
++			count ++;
++		else
++			count += c;
 +	}
 +	Count = count;
 +	return count;
@@ -2323,20 +2416,25 @@ index 0000000..a3fa6b1
 +static void
 +alerts_outgoing_cb(gpointer data, gint source, PurpleInputCondition cond)
 +{
-+	unsigned count;
-+	unsigned char c;
++	const gboolean ident = purple_prefs_get_bool("/plugins/core/alertcount/ident");
++	unsigned c;
++	uint8_t buf[128];
 +
 +	if (Outgoing) {
 +		purple_input_remove(Outgoing);
 +		Outgoing = 0;
 +	}
 +
-+	count = alerts_get_count();
-+	if (count > 127)
++	c = alerts_get_count(buf, ident ? 127 : 0);
++	if (c > 127)
 +		c = 127;
-+	else
-+		c = count;
-+	if (send(Connection, &c, sizeof(c), 0) <= 0) {
++	if (ident)
++		buf[c++] = 0;
++	else {
++		*buf = c;
++		c = 1;
++	}
++	if (send(Connection, buf, c, 0) <= 0) { /* ignore short reads */
 +		purple_debug_info("alertcount", "send: %m\n");
 +		close(Connection);
 +		Connection = -1;
@@ -2372,12 +2470,20 @@ index 0000000..a3fa6b1
 +static void
 +alerts_conversation_cb(PurpleConversation *conv, PurpleConvUpdateType type, void *data)
 +{
++	int c;
++
 +	if (!(type & PURPLE_CONV_UPDATE_UNSEEN))
 +		return;
 +	if (Connection < 0 || Outgoing)
 +		return;
-+	if (!Count && !GPOINTER_TO_INT(purple_conversation_get_data(conv, "unseen-count")))
++	if (conversation_ignore(conv))
 +		return;
++	c = GPOINTER_TO_INT(purple_conversation_get_data(conv, "unseen-count"));
++	if (!Count && !c)
++		return;
++#ifdef ACTIVITY
++	activity_update(conv, c);
++#endif
 +	Outgoing = purple_input_add(Connection, PURPLE_INPUT_WRITE, alerts_outgoing_cb, NULL);
 +}
 +
@@ -2387,7 +2493,7 @@ index 0000000..a3fa6b1
 +	const int on = 1;
 +	const struct sockaddr_in addr = {
 +		.sin_family = AF_INET,
-+		.sin_port = htons(ALERTS_PORT),
++		.sin_port = htons(purple_prefs_get_int("/plugins/core/alertcount/port")),
 +		.sin_addr = { htonl(INADDR_LOOPBACK) }
 +	};
 +
@@ -2428,6 +2534,12 @@ index 0000000..a3fa6b1
 +static gboolean
 +plugin_unload(PurplePlugin *plugin)
 +{
++#ifdef ACTIVITY
++	if (Activity) {
++		g_slice_free_chain(struct activity, Activity, next);
++		Activity = NULL;
++	}
++#endif
 +	if (Outgoing) {
 +		purple_input_remove(Outgoing);
 +		Outgoing = 0;
@@ -2446,6 +2558,37 @@ index 0000000..a3fa6b1
 +	}
 +	return TRUE;
 +}
++
++static PurplePluginPrefFrame *
++get_plugin_pref_frame(PurplePlugin *plugin)
++{
++	PurplePluginPrefFrame *frame;
++	PurplePluginPref *ppref;
++
++	frame = purple_plugin_pref_frame_new();
++
++	ppref = purple_plugin_pref_new_with_name_and_label("/plugins/core/alertcount/port", _("Listen on _port"));
++	purple_plugin_pref_frame_add(frame, ppref);
++
++	ppref = purple_plugin_pref_new_with_name_and_label("/plugins/core/alertcount/aggregate", _("_Aggregate conversation"));
++	purple_plugin_pref_frame_add(frame, ppref);
++
++	ppref = purple_plugin_pref_new_with_name_and_label("/plugins/core/alertcount/ident", _("_Identify conversations"));
++	purple_plugin_pref_frame_add(frame, ppref);
++
++	return frame;
++}
++
++static PurplePluginUiInfo prefs_info =
++{
++	get_plugin_pref_frame,
++	0,   /* page_num (Reserved) */
++	NULL, /* frame (Reserved) */
++	NULL,
++	NULL,
++	NULL,
++	NULL
++};
 +
 +static PurplePluginInfo info =
 +{
@@ -2474,6 +2617,10 @@ index 0000000..a3fa6b1
 +
 +	NULL,                                             /**< ui_info        */
 +	NULL,                                             /**< extra_info     */
++	&prefs_info,
++	NULL,
++	NULL,
++	NULL,
 +	NULL,
 +	NULL
 +};
@@ -2482,16 +2629,18 @@ index 0000000..a3fa6b1
 +init_plugin(PurplePlugin *plugin)
 +{
 +	purple_prefs_add_none("/plugins/core/alertcount");
++	purple_prefs_add_int("/plugins/core/alertcount/port", 6652);
 +	purple_prefs_add_bool("/plugins/core/alertcount/aggregate", TRUE);
++	purple_prefs_add_bool("/plugins/core/alertcount/ident", FALSE);
 +}
 +
 +PURPLE_INIT_PLUGIN(alertcount, init_plugin, info)
 diff --git a/libpurple/plugins/statelog.c b/libpurple/plugins/statelog.c
 new file mode 100644
-index 0000000..b00065a
+index 0000000000..174e03a5ff
 --- /dev/null
 +++ b/libpurple/plugins/statelog.c
-@@ -0,0 +1,336 @@
+@@ -0,0 +1,344 @@
 +#include "internal.h"
 +#include "debug.h"
 +#include "plugin.h"
@@ -2779,7 +2928,11 @@ index 0000000..b00065a
 +{
 +	get_plugin_pref_frame,
 +	0,   /* page_num (Reserved) */
-+	NULL /* frame (Reserved) */
++	NULL, /* frame (Reserved) */
++	NULL,
++	NULL,
++	NULL,
++	NULL
 +};
 +
 +static PurplePluginInfo info =
@@ -2810,6 +2963,10 @@ index 0000000..b00065a
 +	NULL,                                             /**< ui_info        */
 +	NULL,                                             /**< extra_info     */
 +	&prefs_info,
++	NULL,
++	NULL,
++	NULL,
++	NULL,
 +	NULL
 +};
 +
@@ -2830,7 +2987,7 @@ index 0000000..b00065a
 +PURPLE_INIT_PLUGIN(statelog, init_plugin, info)
 diff --git a/libpurple/plugins/syncnotify.c b/libpurple/plugins/syncnotify.c
 new file mode 100644
-index 0000000..646ed53
+index 0000000000..646ed5321f
 --- /dev/null
 +++ b/libpurple/plugins/syncnotify.c
 @@ -0,0 +1,95 @@

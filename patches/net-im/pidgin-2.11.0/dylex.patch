@@ -2309,10 +2309,10 @@ index adc6209..053a6c6 100644
  
 diff --git a/libpurple/plugins/alertcount.c b/libpurple/plugins/alertcount.c
 new file mode 100644
-index 0000000..d0132e3
+index 0000000..deeefac
 --- /dev/null
 +++ b/libpurple/plugins/alertcount.c
-@@ -0,0 +1,311 @@
+@@ -0,0 +1,315 @@
 +#define _GNU_SOURCE
 +#include "internal.h"
 +#include "debug.h"
@@ -2388,6 +2388,8 @@ index 0000000..d0132e3
 +
 +	for (l = purple_get_conversations(); l != NULL; l = l->next) {
 +		PurpleConversation *conv = (PurpleConversation *)l->data;
++		if (!strcmp(conv->name, "slackbot"))
++			continue;
 +		int c = GPOINTER_TO_INT(purple_conversation_get_data(conv, "unseen-count"));
 +		if (!c)
 +			continue;
@@ -2463,6 +2465,8 @@ index 0000000..d0132e3
 +{
 +	int c;
 +
++	if (!strcmp(conv->name, "slackbot"))
++		return;
 +	if (!(type & PURPLE_CONV_UPDATE_UNSEEN))
 +		return;
 +	if (Connection < 0 || Outgoing)
