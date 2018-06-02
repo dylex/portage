@@ -1,0 +1,11 @@
+--- utalk/termcap.h	1997-08-21 01:48:22.000000000 -0400
++++ utalk.new/termcap.h	2018-06-02 12:23:04.318145072 -0400
+@@ -24,7 +24,7 @@
+ extern int tputs(char *str, int affcnt, int (*putc)(int));
+ 
+ extern char *t_ce, *t_me, *t_mr, *t_md, *t_us;
+-extern int xcursor, ycursor;	/* absolute; -1, -1 = unknown */
++extern volatile int xcursor, ycursor;	/* absolute; -1, -1 = unknown */
+ 
+ extern void putcap(char *s);
+ extern void init_termcap(void);
