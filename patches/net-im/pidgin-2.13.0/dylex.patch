@@ -2321,10 +2321,10 @@ index adc6209773..053a6c6680 100644
  
 diff --git a/libpurple/plugins/alertcount.c b/libpurple/plugins/alertcount.c
 new file mode 100644
-index 0000000000..f998e284f1
+index 0000000000..34ded85aad
 --- /dev/null
 +++ b/libpurple/plugins/alertcount.c
-@@ -0,0 +1,322 @@
+@@ -0,0 +1,357 @@
 +#define _GNU_SOURCE
 +#include "internal.h"
 +#include "debug.h"
@@ -2349,6 +2349,19 @@ index 0000000000..f998e284f1
 +} *Activity = NULL;
 +#endif
 +
++static PurpleBlistNode *
++conversation_buddy(PurpleConversation *conv)
++{
++	switch (conv->type) {
++		case PURPLE_CONV_TYPE_IM:
++			return PURPLE_BLIST_NODE(purple_find_buddy(conv->account, conv->name));
++		case PURPLE_CONV_TYPE_CHAT:
++			return PURPLE_BLIST_NODE(purple_blist_find_chat(conv->account, conv->name));
++		default:
++			return NULL;
++	}
++}
++
 +static gboolean
 +conversation_ignore(PurpleConversation *conv)
 +{
@@ -2359,15 +2372,34 @@ index 0000000000..f998e284f1
 +static uint8_t
 +conversation_ident(PurpleConversation *conv)
 +{
-+	unsigned h;
++	PurpleBlistNode *blist;
++	unsigned h = 0x7f;
++
++	if (conversation_ignore(conv))
++		return 0;
++
++	blist = conversation_buddy(conv);
++	if (blist) {
++		int r = purple_blist_node_get_int(blist, "alertcount");
++		if (r)
++			return r;
++	}
++
++#ifdef HASH_NAME
++	char *name;
++	if (blist)
++		name = PURPLE_BLIST_NODE_NAME(blist);
++	if (!name)
++		name = conv->name;
 +	/* hack to get rid of variables resource markers (jabber only?) */
-+	char *p = strchrnul(strchrnul(conv->name, '@'), '/');
++	char *p = strchrnul(strchrnul(name, '@'), '/');
 +	char o = *p;
 +	*p = '\0';
-+	h = g_str_hash(conv->name);
++	h = g_str_hash(name);
 +	*p = o;
 +	while (!(h & 0x7F) && h)
 +		h >>= 7;
++#endif
 +	if (!h)
 +		h = 0x7F;
 +	return (conv->type << 7) | (h & 0x7F);
@@ -2407,13 +2439,16 @@ index 0000000000..f998e284f1
 +
 +	for (l = purple_get_conversations(); l != NULL; l = l->next) {
 +		PurpleConversation *conv = (PurpleConversation *)l->data;
-+		if (conversation_ignore(conv))
-+			continue;
 +		int c = GPOINTER_TO_INT(purple_conversation_get_data(conv, "unseen-count"));
++		uint8_t id;
 +		if (!c)
 +			continue;
++		id = conversation_ident(conv);
++		purple_debug_misc("alertcount", "conversation %s = %u\n", conv->name, id);
++		if (!id)
++			continue;
 +		if (count < buflen) {
-+			buf[count++] = conversation_ident(conv);
++			buf[count++] = id;
 +			if (!aggregate)
 +				buf[count++] = c;
 +		} else if (aggregate)
@@ -2997,6 +3032,19 @@ index 0000000000..174e03a5ff
 +}
 +
 +PURPLE_INIT_PLUGIN(statelog, init_plugin, info)
+diff --git a/libpurple/plugins/statenotify.c b/libpurple/plugins/statenotify.c
+index bfbe595e50..1ec35e2f1a 100644
+--- a/libpurple/plugins/statenotify.c
++++ b/libpurple/plugins/statenotify.c
+@@ -26,7 +26,7 @@ write_status(PurpleBuddy *buddy, const char *message)
+ 	buddy_name = purple_buddy_get_name(buddy);
+ 
+ 	conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM,
+-												 buddy_name, account);
++			buddy_name, account);
+ 
+ 	if (conv == NULL)
+ 		return;
 diff --git a/libpurple/plugins/syncnotify.c b/libpurple/plugins/syncnotify.c
 new file mode 100644
 index 0000000000..646ed5321f
