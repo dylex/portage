@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: /var/cvsroot/gentoo-x86/x11-misc/dzen/dzen-0.8.5.ebuild,v 1.6 2010/06/06 09:49:15 ssuominen Exp $
 
-EAPI=3
+EAPI=6
 
 SLOT="2"
 MY_P="${PN}${SLOT}-${PV}"
@@ -27,6 +27,8 @@ DEPEND="${RDEPEND}
 #S=${WORKDIR}/${MY_P}
 
 src_prepare() {
+	eapply_user
+
 	#cd ${S}
 	sed -i \
 		-e 's:../dzen2:dzen2:' \
