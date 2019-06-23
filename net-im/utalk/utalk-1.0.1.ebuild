@@ -9,7 +9,7 @@ DESCRIPTION="utalk UDP-based full screen talk program"
 HOMEPAGE="http://utalk.ourproject.org/"
 SRC_URI="https://ourproject.org/frs/download.php/408/${PN}-beta.tar.gz"
 
-LICENSE="GPL"
+LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
