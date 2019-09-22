@@ -1,0 +1,17 @@
+diff -Naru ip4r-1.05/ip4r.c ip4r-1.05-new/ip4r.c
+--- ip4r-1.05/ip4r.c	2019-09-22 12:21:02.169174511 -0400
++++ ip4r-1.05-new/ip4r.c	2019-09-22 12:25:05.008293534 -0400
+@@ -72,6 +72,13 @@
+ #include <sys/socket.h>
+ #include <math.h>
+ 
++#ifndef TRUE
++#define TRUE true
++#endif
++#ifndef FALSE
++#define FALSE false
++#endif
++
+ /* IP4 = uint32, stored in host-order. fixed-length and pass by value. */
+ typedef uint32 IP4;
+ 
