@@ -1,10 +1,10 @@
-# Copyright 1999-2018 Gentoo Foundation
+# Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
 
 GENTOO_DEPEND_ON_PERL=no
-PYTHON_COMPAT=( python2_7 )
+PYTHON_COMPAT=( python3_{6,7} )
 
 inherit autotools flag-o-matic gnome2 toolchain-funcs multilib perl-module python-single-r1 xdg-utils
 
@@ -19,7 +19,7 @@ LICENSE="GPL-2"
 SLOT="0/2" # libpurple version
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~amd64-linux ~x86-linux ~x86-macos"
 IUSE="dbus debug doc eds gadu gnutls +gstreamer +gtk idn meanwhile pie"
-IUSE+=" networkmanager nls perl silc tcl tk spell sasl ncurses"
+IUSE+=" networkmanager nls perl tcl tk spell sasl ncurses"
 IUSE+=" groupwise prediction python X +xscreensaver zephyr zeroconf" # mono"
 IUSE+=" aqua"
 IUSE+=" +irc +jabber +oscar +yahoo +simple +msn +myspace"
@@ -56,27 +56,26 @@ RDEPEND="
 	dbus? (
 		>=dev-libs/dbus-glib-0.71
 		>=sys-apps/dbus-0.90
-		dev-python/dbus-python
+		$(python_gen_cond_dep '
+			dev-python/dbus-python[${PYTHON_MULTI_USEDEP}]
+		')
 	)
 	perl? ( >=dev-lang/perl-5.16:= )
-	gadu? (
-		|| (
-			>=net-libs/libgadu-1.11.0[ssl,gnutls]
+	gadu? ( || (
+		>=net-libs/libgadu-1.11.0[ssl,gnutls(+)]
 			>=net-libs/libgadu-1.11.0[-ssl]
-		)
-	)
-	gnutls? ( net-libs/gnutls )
+	) )
+	gnutls? ( net-libs/gnutls:= )
 	!gnutls? (
 		dev-libs/nspr
 		dev-libs/nss
 	)
 	meanwhile? ( net-libs/meanwhile )
-	silc? ( >=net-im/silc-toolkit-1.0.1 )
 	tcl? ( dev-lang/tcl:0= )
 	tk? ( dev-lang/tk:0= )
 	sasl? ( dev-libs/cyrus-sasl:2 )
 	networkmanager? ( net-misc/networkmanager )
-	idn? ( net-dns/libidn )
+	idn? ( net-dns/libidn:= )
 	!<x11-plugins/pidgin-facebookchat-1.69-r1"
 	# Mono support crashes pidgin
 	#mono? ( dev-lang/mono )"
@@ -89,7 +88,7 @@ DEPEND="$RDEPEND
 	dev-perl/XML-Parser
 	virtual/pkgconfig
 	gtk? (
-		x11-proto/scrnsaverproto
+		x11-base/xorg-proto
 		${NLS_DEPEND}
 	)
 	dbus? ( ${PYTHON_DEPS} )
@@ -139,25 +138,32 @@ DYNAMIC_PRPLS=""
 #	x11-plugins/pidgimpd
 
 PATCHES=(
+	"${FILESDIR}/${PN}-2.10.11-tinfo.patch"
 	"${DISTDIR}/${PN}-2.10.9-irc_join_sleep.patch" # 577286
+	"${FILESDIR}/${PN}-2.13.0-disable-one-jid-test.patch" # 593338
+	"${FILESDIR}/${PN}-2.13.0-python3_support.patch" #459996
+	"${FILESDIR}/${PN}-2.13.0-gnutls_sni_support.patch" #708226
 )
 
-pkg_setup() {
+pkg_pretend() {
 	if ! use gtk && ! use ncurses ; then
 		elog "You did not pick the ncurses or gtk use flags, only libpurple"
 		elog "will be built."
 	fi
-	if use python || use dbus ; then
-		python-single-r1_pkg_setup
-	fi
 
 	# dbus is enabled, no way to disable linkage with python => python is enabled
 	#REQUIRED_USE="gtk? ( nls ) dbus? ( python )"
-	if use gtk && ! use nls; then
+	if use gtk && ! use nls ; then
 		ewarn "gtk build => nls is enabled!"
 	fi
-	if use dbus && ! use python; then
+	if use dbus && ! use python ; then
 		elog "dbus is enabled, no way to disable linkage with python => python is enabled"
+	fi
+}
+
+pkg_setup() {
+	if use python || use dbus ; then
+		python-single-r1_pkg_setup
 	fi
 }
 
@@ -181,7 +187,6 @@ src_configure() {
 	use myspace && DYNAMIC_PRPLS+=",myspace"
 	use gadu 	&& DYNAMIC_PRPLS+=",gg"
 	use groupwise 	&& DYNAMIC_PRPLS+=",novell"
-	use silc 	&& DYNAMIC_PRPLS+=",silc"
 	use meanwhile 	&& DYNAMIC_PRPLS+=",sametime"
 	use zephyr 	&& DYNAMIC_PRPLS+=",zephyr"
 	use zeroconf 	&& DYNAMIC_PRPLS+=",bonjour"
@@ -239,7 +244,7 @@ src_configure() {
 src_install() {
 	gnome2_src_install
 
-	if use gtk; then
+	if use gtk ; then
 		# Fix tray paths for e16 (x11-wm/enlightenment) and other
 		# implementations that are not complient with new hicolor theme yet, #323355
 		local pixmapdir
@@ -256,7 +261,7 @@ src_install() {
 	use perl && perl_delete_localpod
 
 	if use python && use dbus ; then
-		python_fix_shebang "${D}"
+		python_fix_shebang "${ED}"
 		python_optimize
 	fi
 
@@ -267,17 +272,16 @@ src_install() {
 }
 
 src_test() {
-	emake check
+	# make default build logs slightly more useful
+	emake check VERBOSE=1
 }
 
-pkg_preinst() { gnome2_icon_savelist; }
-
 pkg_postinst() {
-	gnome2_icon_cache_update
+	xdg_icon_cache_update
 	xdg_desktop_database_update
 }
 
 pkg_postrm() {
-	gnome2_icon_cache_update
+	xdg_icon_cache_update
 	xdg_desktop_database_update
 }

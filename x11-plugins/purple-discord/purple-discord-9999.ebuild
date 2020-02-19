@@ -14,7 +14,13 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
-DEPEND="net-im/pidgin
-dev-vcs/git
-dev-libs/json-glib"
-RDEPEND="${DEPEND}"
+RDEPEND="net-im/pidgin
+dev-libs/json-glib
+sys-devel/gettext"
+DEPEND="${RDEPEND}
+dev-vcs/git"
+
+src_prepare () {
+	sed -i '/^install:/s/ install-icons / /' Makefile
+	eapply_user
+}
