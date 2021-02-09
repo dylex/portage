@@ -1,16 +1,15 @@
-# Copyright 1999-2016 Gentoo Foundation
+# Copyright 1999-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
-EAPI=6
+EAPI=7
 
 GENTOO_DEPEND_ON_PERL=no
-PYTHON_COMPAT=( python2_7 python3_{3,4} )
+PYTHON_COMPAT=( python3_{7,8} )
 
-inherit autotools flag-o-matic eutils toolchain-funcs multilib perl-module python-single-r1
+inherit autotools gnome2-utils flag-o-matic toolchain-funcs multilib perl-module python-single-r1 xdg
 
 DESCRIPTION="GTK Instant Messenger client"
-HOMEPAGE="http://pidgin.im/"
+HOMEPAGE="https://pidgin.im/"
 SRC_URI="
 	mirror://sourceforge/${PN}/${P}.tar.bz2
 	https://dev.gentoo.org/~polynomial-c/${PN}-eds-3.6.patch.bz2
@@ -18,11 +17,11 @@ SRC_URI="
 
 LICENSE="GPL-2"
 SLOT="0/2" # libpurple version
-KEYWORDS="~alpha amd64 ~arm ~hppa ~ia64 ~ppc ~ppc64 ~sparc x86 ~x86-freebsd ~amd64-linux ~x86-linux ~x86-macos"
-IUSE="dbus debug doc eds gadu gnutls +gstreamer +gtk idn meanwhile mxit pie"
-IUSE+=" networkmanager nls perl silc tcl tk spell sasl ncurses"
-IUSE+=" groupwise prediction python X +xscreensaver zephyr zeroconf" # mono"
-IUSE+=" aqua"
+KEYWORDS="~alpha amd64 arm arm64 ~ia64 ppc ppc64 sparc x86 ~amd64-linux ~x86-linux"
+IUSE="aqua dbus debug doc eds gadu gnutls groupwise +gstreamer +gtk idn
+meanwhile ncurses networkmanager nls perl pie prediction python sasl spell tcl
+tk +xscreensaver zephyr zeroconf"
+IUSE+=" X"
 IUSE+=" +irc +jabber +oscar +yahoo +simple +msn +myspace"
 
 # dbus requires python to generate C code for dbus bindings (thus DEPEND only).
@@ -34,61 +33,75 @@ IUSE+=" +irc +jabber +oscar +yahoo +simple +msn +myspace"
 RDEPEND="
 	>=dev-libs/glib-2.16
 	>=dev-libs/libxml2-2.6.18
-	ncurses? ( sys-libs/ncurses:0=[unicode]
+	ncurses? (
+		>=dev-libs/libgnt-$(ver_cut 1-2)
+		sys-libs/ncurses:0=[unicode]
 		dbus? ( ${PYTHON_DEPS} )
-		python? ( ${PYTHON_DEPS} ) )
+		python? ( ${PYTHON_DEPS} )
+	)
 	gtk? (
 		>=x11-libs/gtk+-2.10:2[aqua=]
 		x11-libs/libSM
+		>=x11-libs/pango-1.4.0
 		xscreensaver? ( x11-libs/libXScrnSaver )
 		spell? ( >=app-text/gtkspell-2.0.2:2 )
 		eds? ( >=gnome-extra/evolution-data-server-3.6:= )
 		prediction? ( >=dev-db/sqlite-3.3:3 )
 	)
-	gstreamer? ( media-libs/gstreamer:1.0
+	gstreamer? (
+		media-libs/gstreamer:1.0
 		media-libs/gst-plugins-base:1.0
-		>=net-libs/farstream-0.2.7:0.2 )
+		>=net-libs/farstream-0.2.7:0.2
+	)
 	zeroconf? ( net-dns/avahi[dbus] )
-	dbus? ( >=dev-libs/dbus-glib-0.71
+	dbus? (
+		>=dev-libs/dbus-glib-0.71
 		>=sys-apps/dbus-0.90
-		dev-python/dbus-python )
+		$(python_gen_cond_dep '
+			dev-python/dbus-python[${PYTHON_MULTI_USEDEP}]
+		')
+	)
 	perl? ( >=dev-lang/perl-5.16:= )
-	gadu? ( || ( >=net-libs/libgadu-1.11.0[ssl,gnutls]
-		>=net-libs/libgadu-1.11.0[-ssl] ) )
-	gnutls? ( net-libs/gnutls )
+	gadu? ( >=net-libs/libgadu-1.11.0 )
+	gnutls? ( net-libs/gnutls:= )
 	!gnutls? (
 		dev-libs/nspr
 		dev-libs/nss
 	)
 	meanwhile? ( net-libs/meanwhile )
-	silc? ( >=net-im/silc-toolkit-1.0.1 )
 	tcl? ( dev-lang/tcl:0= )
 	tk? ( dev-lang/tk:0= )
 	sasl? ( dev-libs/cyrus-sasl:2 )
 	networkmanager? ( net-misc/networkmanager )
-	idn? ( net-dns/libidn )
-	!<x11-plugins/pidgin-facebookchat-1.69-r1"
-	# Mono support crashes pidgin
-	#mono? ( dev-lang/mono )"
+	idn? ( net-dns/libidn:= )
+	!<x11-plugins/pidgin-facebookchat-1.69-r1
+"
 
 # We want nls in case gtk is enabled, bug #
 NLS_DEPEND=">=dev-util/intltool-0.41.1 sys-devel/gettext"
 
-DEPEND="$RDEPEND
+DEPEND="${RDEPEND}
+	gtk? (
+		x11-base/xorg-proto
+		${NLS_DEPEND}
+	)
+	dbus? ( ${PYTHON_DEPS} )
+"
+BDEPEND="
 	dev-lang/perl
 	dev-perl/XML-Parser
 	virtual/pkgconfig
-	gtk? ( x11-proto/scrnsaverproto
-		${NLS_DEPEND} )
-	dbus? ( ${PYTHON_DEPS} )
 	doc? ( app-doc/doxygen )
-	!gtk? ( nls? ( ${NLS_DEPEND} ) )"
+	!gtk? ( nls? ( ${NLS_DEPEND} ) )
+"
 
-DOCS="AUTHORS HACKING NEWS README ChangeLog"
+DOCS=( AUTHORS HACKING NEWS README ChangeLog )
 
-REQUIRED_USE="dbus? ( ${PYTHON_REQUIRED_USE} )
-		networkmanager? ( dbus )
-		python? ( ${PYTHON_REQUIRED_USE} )"
+REQUIRED_USE="
+	dbus? ( ${PYTHON_REQUIRED_USE} )
+	networkmanager? ( dbus )
+	python? ( ${PYTHON_REQUIRED_USE} )
+"
 
 # Enable Default protocols
 DYNAMIC_PRPLS=""
@@ -125,31 +138,40 @@ DYNAMIC_PRPLS=""
 #	x11-plugins/pidgimpd
 
 PATCHES=(
+	"${FILESDIR}/${PN}-2.14.0-gold.patch"
+	"${WORKDIR}/${PN}-eds-3.6.patch"
+	"${FILESDIR}/${PN}-2.10.9-fix-gtkmedia.patch"
+	"${FILESDIR}/${PN}-2.10.10-eds-3.6-configure.ac.patch"
+	"${FILESDIR}/${PN}-2.10.11-tinfo.patch"
 	"${DISTDIR}/${PN}-2.10.9-irc_join_sleep.patch" # 577286
+	"${FILESDIR}/${PN}-2.13.0-disable-one-jid-test.patch" # 593338
+	"${FILESDIR}/${PN}-2.13.0-metainfo.patch"
 )
 
-pkg_setup() {
+pkg_pretend() {
 	if ! use gtk && ! use ncurses ; then
 		elog "You did not pick the ncurses or gtk use flags, only libpurple"
 		elog "will be built."
 	fi
-	if use python || use dbus ; then
-		python-single-r1_pkg_setup
-	fi
 
 	# dbus is enabled, no way to disable linkage with python => python is enabled
 	#REQUIRED_USE="gtk? ( nls ) dbus? ( python )"
-	if use gtk && ! use nls; then
+	if use gtk && ! use nls ; then
 		ewarn "gtk build => nls is enabled!"
 	fi
-	if use dbus && ! use python; then
+	if use dbus && ! use python ; then
 		elog "dbus is enabled, no way to disable linkage with python => python is enabled"
+	fi
+}
+
+pkg_setup() {
+	if use python || use dbus ; then
+		python-single-r1_pkg_setup
 	fi
 }
 
 src_prepare() {
 	default
-
 	eautoreconf
 }
 
@@ -159,8 +181,6 @@ src_configure() {
 	replace-flags -O? -O2
 	use pie && append-cflags -fPIE -pie
 
-	local myconf=()
-
 	use irc && DYNAMIC_PRPLS+=",irc"
 	use jabber && DYNAMIC_PRPLS+=",jabber"
 	use oscar && DYNAMIC_PRPLS+=",oscar"
@@ -168,76 +188,75 @@ src_configure() {
 	use simple && DYNAMIC_PRPLS+=",simple"
 	use msn && DYNAMIC_PRPLS+=",msn"
 	use myspace && DYNAMIC_PRPLS+=",myspace"
+	use gadu 	&& DYNAMIC_PRPLS+=",gg"
+	use groupwise 	&& DYNAMIC_PRPLS+=",novell"
+	use meanwhile 	&& DYNAMIC_PRPLS+=",sametime"
+	use zephyr 	&& DYNAMIC_PRPLS+=",zephyr"
+	use zeroconf 	&& DYNAMIC_PRPLS+=",bonjour"
 
-	if use gadu; then
-		DYNAMIC_PRPLS="${DYNAMIC_PRPLS},gg"
-	fi
-
-	use groupwise && DYNAMIC_PRPLS+=",novell"
-	use silc && DYNAMIC_PRPLS+=",silc"
-	use meanwhile && DYNAMIC_PRPLS+=",sametime"
-	use mxit && DYNAMIC_PRPLS+=",mxit"
-	use zephyr && DYNAMIC_PRPLS+=",zephyr"
-	use zeroconf && DYNAMIC_PRPLS+=",bonjour"
+	local myconf=(
+		--disable-mono
+		--with-dynamic-prpls="${DYNAMIC_PRPLS}"
+		--with-system-ssl-certs="${EPREFIX}/etc/ssl/certs/"
+		$(use X && echo "--x-includes=\"${EPREFIX}\"/usr/include/X11")
+		$(use_enable ncurses consoleui)
+		$(use_enable gtk gtkui)
+		$(use_enable gtk sm)
+		$(usex gtk '--enable-nls' "$(use_enable nls)")
+		$(use gtk && use_enable xscreensaver screensaver)
+		$(use gtk && use_enable prediction cap)
+		$(use gtk && use_enable eds gevolution)
+		$(use gtk && use_enable spell gtkspell)
+		$(use_enable perl)
+		$(use_enable tk)
+		$(use_enable tcl)
+		$(use_enable debug)
+		$(use_enable dbus)
+		$(use_enable meanwhile)
+		$(use_enable gstreamer)
+		$(use_with gstreamer gstreamer 1.0)
+		$(use_enable gstreamer farstream)
+		$(use_enable gstreamer vv)
+		$(use_enable sasl cyrus-sasl )
+		$(use_enable doc doxygen)
+		$(use_enable networkmanager nm)
+		$(use_enable zeroconf avahi)
+		$(use_enable idn)
+		$(use_with X x) \
+	)
 
 	if use gnutls; then
 		einfo "Disabling NSS, using GnuTLS"
-		myconf+=( --enable-nss=no --enable-gnutls=yes )
-		myconf+=( --with-gnutls-includes="${EPREFIX}/usr/include/gnutls" )
-		myconf+=( --with-gnutls-libs="${EPREFIX}/usr/$(get_libdir)" )
+		myconf+=(
+			--enable-nss=no
+			--enable-gnutls=yes
+			--with-gnutls-includes="${EPREFIX}/usr/include/gnutls"
+			--with-gnutls-libs="${EPREFIX}/usr/$(get_libdir)"
+		)
 	else
 		einfo "Disabling GnuTLS, using NSS"
-		myconf+=( --enable-gnutls=no --enable-nss=yes )
+		myconf+=(
+			--enable-gnutls=no
+			--enable-nss=yes
+		)
 	fi
 
-	if use dbus || { use ncurses && use python; }; then
+	if use dbus || { use ncurses && use python ; } ; then
 		myconf+=( --with-python=${PYTHON} )
 	else
 		myconf+=( --without-python )
 	fi
 
-	econf \
-		$(use_enable ncurses consoleui) \
-		$(use_enable gtk gtkui) \
-		$(use_enable gtk sm) \
-		$(use gtk || use_enable nls) \
-		$(use gtk && echo "--enable-nls") \
-		$(use gtk && use_enable xscreensaver screensaver) \
-		$(use gtk && use_enable prediction cap) \
-		$(use gtk && use_enable eds gevolution) \
-		$(use gtk && use_enable spell gtkspell) \
-		$(use_enable perl) \
-		$(use_enable tk) \
-		$(use_enable tcl) \
-		$(use_enable debug) \
-		$(use_enable dbus) \
-		$(use_enable meanwhile) \
-		$(use_enable gstreamer) \
-		$(use_with gstreamer gstreamer 1.0) \
-		$(use_enable gstreamer farstream) \
-		$(use_enable gstreamer vv) \
-		$(use_enable sasl cyrus-sasl ) \
-		$(use_enable doc doxygen) \
-		$(use_enable networkmanager nm) \
-		$(use_enable zeroconf avahi) \
-		$(use_enable idn) \
-		$(use_with X x) \
-		--with-system-ssl-certs="${EPREFIX}/etc/ssl/certs/" \
-		--with-dynamic-prpls="${DYNAMIC_PRPLS}" \
-		--disable-mono \
-		$(use X && echo "--x-includes=\"${EPREFIX}\"/usr/include/X11") \
-		${myconf[@]}
-		#$(use_enable mono) \
+	econf "${myconf[@]}"
 }
 
 src_install() {
-	# mimicking gnome2_src_install as that one is banned for >=EAPI-6 (*sigh*)
+	# setting this here because gnome2.eclass is not EAPI-7 ready
 	export GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL="1"
-	emake DESTDIR="${D}" install
-	unset GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL
+	default
 
-	if use gtk; then
-		# Fix tray pathes for kde-3.5, e16 (x11-wm/enlightenment) and other
+	if use gtk ; then
+		# Fix tray paths for e16 (x11-wm/enlightenment) and other
 		# implementations that are not complient with new hicolor theme yet, #323355
 		local pixmapdir
 		for d in 16 22 32 48; do
@@ -247,22 +266,40 @@ src_install() {
 			for f in ../status/*; do
 				ln -s ${f} || die
 			done
-			popd >/dev/null
+			popd >/dev/null || die
 		done
 	fi
 	use perl && perl_delete_localpod
 
-	if use python || use dbus ; then
-		python_fix_shebang "${D}"
+	if use python && use dbus ; then
+		python_fix_shebang "${ED}"
 		python_optimize
 	fi
 
-	dodoc ${DOCS} finch/plugins/pietray.py
+	dodoc ${DOCS[@]} finch/plugins/pietray.py
 	docompress -x /usr/share/doc/${PF}/pietray.py
 
-	prune_libtool_files --all
+	find "${ED}" \( -name "*.a" -o -name "*.la" \) -delete || die
 }
 
 src_test() {
-	emake check
+	# make default build logs slightly more useful
+	emake check VERBOSE=1
+}
+
+pkg_preinst() {
+	gnome2_gconf_savelist
+	xdg_pkg_preinst
+}
+
+pkg_postinst() {
+	gnome2_gconf_install
+	gnome2_schemas_update
+	xdg_pkg_postinst
+}
+
+pkg_postrm() {
+	gnome2_gconf_uninstall
+	gnome2_schemas_update
+	xdg_pkg_postrm
 }
