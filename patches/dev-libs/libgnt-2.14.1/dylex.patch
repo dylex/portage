@@ -1100,10 +1100,10 @@ index bb80434..8d3f5ef 100644
   * gnt_ws_get_name:
 diff --git a/wms/full.c b/wms/full.c
 new file mode 100644
-index 0000000..d7cc531
+index 0000000..dbee4c7
 --- /dev/null
 +++ b/wms/full.c
-@@ -0,0 +1,193 @@
+@@ -0,0 +1,202 @@
 +#include <stdlib.h>
 +#include <string.h>
 +#include <sys/types.h>
@@ -1224,6 +1224,15 @@ index 0000000..d7cc531
 +focus_blist(GntBindable *bindable, GList *null)
 +{
 +	// purple_blist_show();
++	GntWM *wm = GNT_WM(bindable);
++	GList *iter;
++	for (iter = wm->acts; iter; iter = iter->next) {
++		GntAction *action = iter->data;
++		if (!strcmp(action->label, "Buddy List")) {
++			action->callback();
++			break;
++		}
++	}
 +	return TRUE;
 +}
 +

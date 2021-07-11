@@ -1,10 +1,9 @@
-EAPI=5
+EAPI=8
 
-CABAL_FEATURES="bin"
 inherit darcs haskell-cabal
 
 DESCRIPTION="Multi-file, colored, filtered log tailer"
-HOMEPAGE="https://dylex.net:9947/src"
+HOMEPAGE="https://dylex.net/src"
 EDARCS_REPOSITORY="http://hub.darcs.net/dylex/ztail"
 EDARCS_TOP_DIR="${WORKDIR}/darcs-src"
 

@@ -1,10 +1,9 @@
-EAPI=5
+EAPI=8
 
-CABAL_FEATURES="bin"
 inherit haskell-cabal
 
 DESCRIPTION="Multi-file, colored, filtered log tailer"
-HOMEPAGE="https://dylex.net:9947/src"
+HOMEPAGE="https://dylex.net/src"
 SRC_URI="http://hackage.haskell.org/packages/archive/${PN}/${PV}/${P}.tar.gz
 	http://hackage.haskell.org/package/${PV}/${PN}.cabal"
 
@@ -18,11 +17,6 @@ DEPEND="dev-lang/ghc
 	dev-haskell/regex-compat
 	dev-haskell/unordered-containers"
 RDEPEND="${DEPEND}"
-
-src_unpack() {
-	unpack ${P}.tar.gz
-	cp ${DISTDIR}/${PN}.cabal ${WORKDIR}/${P}
-}
 
 src_compile() {
 	if use inotify; then
