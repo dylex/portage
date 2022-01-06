@@ -15,7 +15,8 @@ IUSE="inotify"
 DEPEND="dev-lang/ghc
 	inotify? ( dev-haskell/hinotify )
 	dev-haskell/regex-compat
-	dev-haskell/unordered-containers"
+	dev-haskell/unordered-containers
+	dev-haskell/time-compat"
 RDEPEND="${DEPEND}"
 
 src_compile() {
