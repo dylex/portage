@@ -1,0 +1,1334 @@
+diff --git a/gntcolors.c b/gntcolors.c
+index b5a5904..a0d71e4 100644
+--- a/gntcolors.c
++++ b/gntcolors.c
+@@ -38,22 +38,26 @@
+ #include <string.h>
+ 
+ static gboolean hascolors;
++static int bg_color = -1;
+ static int custom_type = GNT_COLORS;
++#define MAX_COLORS 256
+ static struct
+ {
++	gboolean i;
+ 	short r, g, b;
+-} colors[GNT_TOTAL_COLORS];
+-
+-static void
+-backup_colors(void)
+-{
+-	short i;
+-	for (i = 0; i < GNT_TOTAL_COLORS; i++)
+-	{
+-		color_content(i, &colors[i].r,
+-				&colors[i].g, &colors[i].b);
+-	}
+-}
++	gboolean o;
++	short or, og, ob;
++} colors[MAX_COLORS] = {
++	/* assume default colors */
++	{ 1, 0, 0, 0, 0 },
++	{ 1, 1000, 0, 0, 0 },
++	{ 1, 0, 1000, 0, 0 },
++	{ 1, 1000, 1000, 0, 0 },
++	{ 1, 0, 0, 1000, 0 },
++	{ 1, 1000, 0, 1000, 0 },
++	{ 1, 0, 1000, 1000, 0 },
++	{ 1, 1000, 1000, 1000, 0 }
++};
+ 
+ static gboolean
+ can_use_custom_color(void)
+@@ -65,10 +69,10 @@ static void
+ restore_colors(void)
+ {
+ 	short i;
+-	for (i = 0; i < GNT_TOTAL_COLORS; i++)
++	for (i = 0; i < MAX_COLORS; i++)
+ 	{
+-		init_color(i, colors[i].r,
+-				colors[i].g, colors[i].b);
++		if (colors[i].o)
++			init_color(i, colors[i].or, colors[i].og, colors[i].ob);
+ 	}
+ }
+ 
+@@ -76,6 +80,7 @@ void gnt_init_colors()
+ {
+ 	static gboolean init = FALSE;
+ 	int defaults;
++	int c;
+ 
+ 	if (init)
+ 		return;
+@@ -86,53 +91,26 @@ void gnt_init_colors()
+ 		return;
+ 	defaults = use_default_colors();
+ 
+-	if (can_use_custom_color())
+-	{
+-		backup_colors();
+-
+-		/* Do some init_color()s */
+-		init_color(GNT_COLOR_BLACK, 0, 0, 0);
+-		init_color(GNT_COLOR_RED, 1000, 0, 0);
+-		init_color(GNT_COLOR_GREEN, 0, 1000, 0);
+-		init_color(GNT_COLOR_BLUE, 250, 250, 700);
+-		init_color(GNT_COLOR_WHITE, 1000, 1000, 1000);
+-		init_color(GNT_COLOR_GRAY, 699, 699, 699);
+-		init_color(GNT_COLOR_DARK_GRAY, 256, 256, 256);
+-
+-		/* Now some init_pair()s */
+-		init_pair(GNT_COLOR_NORMAL, GNT_COLOR_BLACK, GNT_COLOR_WHITE);
+-		init_pair(GNT_COLOR_HIGHLIGHT, GNT_COLOR_WHITE, GNT_COLOR_BLUE);
+-		init_pair(GNT_COLOR_SHADOW, GNT_COLOR_BLACK, GNT_COLOR_DARK_GRAY);
+-
+-		init_pair(GNT_COLOR_TITLE, GNT_COLOR_WHITE, GNT_COLOR_BLUE);
+-		init_pair(GNT_COLOR_TITLE_D, GNT_COLOR_WHITE, GNT_COLOR_GRAY);
+-
+-		init_pair(GNT_COLOR_TEXT_NORMAL, GNT_COLOR_WHITE, GNT_COLOR_BLUE);
+-		init_pair(GNT_COLOR_HIGHLIGHT_D, GNT_COLOR_BLACK, GNT_COLOR_GRAY);
+-		init_pair(GNT_COLOR_DISABLED, GNT_COLOR_GRAY, GNT_COLOR_WHITE);
+-		init_pair(GNT_COLOR_URGENT, GNT_COLOR_WHITE, GNT_COLOR_RED);
+-	}
+-	else
+-	{
+-		int bg;
+-
+-		if (defaults == OK) {
+-			init_pair(GNT_COLOR_NORMAL, -1, -1);
+-			bg = -1;
+-		} else {
+-			init_pair(GNT_COLOR_NORMAL, COLOR_BLACK, COLOR_WHITE);
+-			bg = COLOR_WHITE;
+-		}
+-		init_pair(GNT_COLOR_DISABLED, COLOR_YELLOW, bg);
+-		init_pair(GNT_COLOR_URGENT, COLOR_GREEN, bg);
+-
+-		init_pair(GNT_COLOR_HIGHLIGHT, COLOR_WHITE, COLOR_BLUE);
+-		init_pair(GNT_COLOR_SHADOW, COLOR_BLACK, COLOR_BLACK);
+-		init_pair(GNT_COLOR_TITLE, COLOR_WHITE, COLOR_BLUE);
+-		init_pair(GNT_COLOR_TITLE_D, COLOR_WHITE, COLOR_BLACK);
+-		init_pair(GNT_COLOR_TEXT_NORMAL, COLOR_WHITE, COLOR_BLUE);
+-		init_pair(GNT_COLOR_HIGHLIGHT_D, COLOR_CYAN, COLOR_BLACK);
++	if (defaults == OK) {
++		bg_color = -1;
++		init_pair(GNT_COLOR_NORMAL, -1, bg_color);
++	} else {
++		bg_color = COLOR_WHITE;
++		init_pair(GNT_COLOR_NORMAL, COLOR_BLACK, bg_color);
+ 	}
++
++	for (c = 1; c < GNT_COLOR_NORMAL; c ++)
++		init_pair(c, c, bg_color);
++
++	init_pair(GNT_COLOR_DISABLED, COLOR_YELLOW, bg_color);
++	init_pair(GNT_COLOR_URGENT, COLOR_GREEN, bg_color);
++
++	init_pair(GNT_COLOR_HIGHLIGHT, COLOR_WHITE, COLOR_BLUE);
++	init_pair(GNT_COLOR_SHADOW, COLOR_BLACK, COLOR_BLACK);
++	init_pair(GNT_COLOR_TITLE, COLOR_WHITE, COLOR_BLUE);
++	init_pair(GNT_COLOR_TITLE_D, COLOR_WHITE, COLOR_BLACK);
++	init_pair(GNT_COLOR_TEXT_NORMAL, COLOR_WHITE, COLOR_BLUE);
++	init_pair(GNT_COLOR_HIGHLIGHT_D, COLOR_CYAN, COLOR_BLACK);
+ }
+ 
+ void
+@@ -146,31 +124,34 @@ int
+ gnt_colors_get_color(char *key)
+ {
+ 	int color;
+-	gboolean custom = can_use_custom_color();
+ 
+ 	key = g_strstrip(key);
+ 
+ 	if (strcmp(key, "black") == 0)
+-		color = custom ? GNT_COLOR_BLACK : COLOR_BLACK;
++		color = COLOR_BLACK;
+ 	else if (strcmp(key, "red") == 0)
+-		color = custom ? GNT_COLOR_RED : COLOR_RED;
++		color = COLOR_RED;
+ 	else if (strcmp(key, "green") == 0)
+-		color = custom ? GNT_COLOR_GREEN : COLOR_GREEN;
++		color = COLOR_GREEN;
++	else if (strcmp(key, "yellow") == 0)
++		color = COLOR_YELLOW;
+ 	else if (strcmp(key, "blue") == 0)
+-		color = custom ? GNT_COLOR_BLUE : COLOR_BLUE;
+-	else if (strcmp(key, "white") == 0)
+-		color = custom ? GNT_COLOR_WHITE : COLOR_WHITE;
+-	else if (strcmp(key, "gray") == 0 || strcmp(key, "grey") == 0)
+-		color = custom ? GNT_COLOR_GRAY : COLOR_YELLOW;  /* eh? */
+-	else if (strcmp(key, "darkgray") == 0 || strcmp(key, "darkgrey") == 0)
+-		color = custom ? GNT_COLOR_DARK_GRAY : COLOR_BLACK;
++		color = COLOR_BLUE;
+ 	else if (strcmp(key, "magenta") == 0)
+ 		color = COLOR_MAGENTA;
+ 	else if (strcmp(key, "cyan") == 0)
+ 		color = COLOR_CYAN;
++	else if (strcmp(key, "white") == 0)
++		color = COLOR_WHITE;
+ 	else if (strcmp(key, "default") == 0)
+ 		color = -1;
+ 	else {
++		if (strncmp(key, "color", 5) == 0)
++		{
++			color = atoi(&key[5]);
++			if (color > 0 && color < COLORS && color < MAX_COLORS)
++				return color;
++		}
+ 		g_warning("Invalid color name: %s\n", key);
+ 		color = -EINVAL;
+ 	}
+@@ -212,7 +193,17 @@ void gnt_colors_parse(GKeyFile *kfile)
+ 					continue;
+ 				}
+ 
+-				init_color(color, r, g, b);
++				if (!colors[color].o)
++				{
++					colors[color].o = color_content(color, &colors[color].or, &colors[color].og, &colors[color].ob) != ERR;
++				}
++				if (init_color(color, r, g, b) != ERR)
++				{
++					colors[color].i = 1;
++					colors[color].r = r;
++					colors[color].g = g;
++					colors[color].b = b;
++				}
+ 			}
+ 			g_strfreev(list);
+ 		}
+@@ -301,6 +292,8 @@ int gnt_color_pair(int pair)
+ 
+ int gnt_color_add_pair(int fg, int bg)
+ {
++	if (bg == -1)
++		bg = bg_color;
+ 	init_pair(custom_type, fg, bg);
+ 	return custom_type++;
+ }
+diff --git a/gntcolors.h b/gntcolors.h
+index f02e81d..37a51a7 100644
+--- a/gntcolors.h
++++ b/gntcolors.h
+@@ -38,7 +38,16 @@
+  */
+ typedef enum
+ {
+-	GNT_COLOR_NORMAL = 1,
++	GNT_COLOR_BLACK = 0,
++	GNT_COLOR_RED,
++	GNT_COLOR_GREEN,
++	GNT_COLOR_YELLOW,
++	GNT_COLOR_BLUE,
++	GNT_COLOR_MAGENTA,
++	GNT_COLOR_CYAN,
++	GNT_COLOR_WHITE,
++
++	GNT_COLOR_NORMAL,
+ 	GNT_COLOR_HIGHLIGHT,		/* eg. when a button is selected */
+ 	GNT_COLOR_DISABLED,		/* eg. when a button is disabled */
+ 	GNT_COLOR_HIGHLIGHT_D,	/* eg. when a button is selected, but some other window is in focus */
+@@ -53,18 +62,6 @@ typedef enum
+ 	GNT_COLORS
+ } GntColorType;
+ 
+-enum
+-{
+-	GNT_COLOR_BLACK = 0,
+-	GNT_COLOR_RED,
+-	GNT_COLOR_GREEN,
+-	GNT_COLOR_BLUE,
+-	GNT_COLOR_WHITE,
+-	GNT_COLOR_GRAY,
+-	GNT_COLOR_DARK_GRAY,
+-	GNT_TOTAL_COLORS
+-};
+-
+ /**
+  * gnt_init_colors:
+  *
+diff --git a/gnttextview.c b/gnttextview.c
+index 9100989..f5e52c5 100644
+--- a/gnttextview.c
++++ b/gnttextview.c
+@@ -73,6 +73,13 @@ text_view_contains(GntTextView *view, const char *str)
+ 	return (str >= view->string->str && str < view->string->str + view->string->len);
+ }
+ 
++static void
++gnt_text_view_draw_text(GntWidget *widget, GntTextFormatFlags fl, chtype at, char *s, char *e)
++{
++	wattrset(widget->window, at);
++	waddnstr(widget->window, s, e-s);
++}
++
+ static void
+ gnt_text_view_draw(GntWidget *widget)
+ {
+@@ -111,36 +118,26 @@ gnt_text_view_draw(GntWidget *widget)
+ 		for (iter = line->segments; iter; iter = iter->next)
+ 		{
+ 			GntTextSegment *seg = iter->data;
++			char *start = view->string->str + seg->start;
+ 			char *end = view->string->str + seg->end;
+-			char back = *end;
+-			chtype fl = seg->flags;
+-			*end = '\0';
+-			if (select_start && select_start < view->string->str + seg->start && select_end > view->string->str + seg->end) {
+-				fl |= A_REVERSE;
+-				wattrset(widget->window, fl);
+-				wprintw(widget->window, "%s", C_(view->string->str + seg->start));
+-			} else if (select_start && select_end &&
+-				((select_start >= view->string->str + seg->start && select_start <= view->string->str + seg->end) ||
+-				(select_end <= view->string->str + seg->end && select_start <= view->string->str + seg->start))) {
+-				char *cur = view->string->str + seg->start;
+-				while (*cur != '\0') {
+-					gchar *last = g_utf8_next_char(cur);
+-					gchar *str;
+-					if (cur >= select_start && cur <= select_end)
+-						fl |= A_REVERSE;
+-					else
+-						fl = seg->flags;
+-					str = g_strndup(cur, last - cur);
+-					wattrset(widget->window, fl);
+-					waddstr(widget->window, C_(str));
+-					g_free(str);
+-					cur = g_utf8_next_char(cur);
+-				}
+-			} else {
+-				wattrset(widget->window, fl);
+-				wprintw(widget->window, "%s", C_(view->string->str + seg->start));
++			GntTextFormatFlags fl = seg->tvflag;
++			chtype at = seg->flags;
++			if (select_start && select_end && select_start < end && select_end >= start)
++			{
++				char *s = start;
++				char *e = select_start;
++				if (e > s)
++					gnt_text_view_draw_text(widget, fl, at, s, e);
++				s = MAX(select_start, start);
++				e = MIN(select_end+1, end);
++				gnt_text_view_draw_text(widget, fl, at | A_REVERSE, s, e);
++				s = select_end+1;
++				e = end;
++				if (e > s)
++					gnt_text_view_draw_text(widget, fl, at, s, e);
+ 			}
+-			*end = back;
++			else
++				gnt_text_view_draw_text(widget, fl, at, start, end);
+ 		}
+ 		wattroff(widget->window, A_UNDERLINE | A_BLINK | A_REVERSE);
+ 		whline(widget->window, ' ', widget->priv.width - line->length - has_scroll);
+@@ -669,10 +666,10 @@ chtype gnt_text_format_flag_to_chtype(GntTextFormatFlags flags)
+ 		fl |= A_UNDERLINE;
+ 	if (flags & GNT_TEXT_FLAG_BLINK)
+ 		fl |= A_BLINK;
+-
+ 	if (flags & GNT_TEXT_FLAG_DIM)
+-		fl |= (A_DIM | gnt_color_pair(GNT_COLOR_DISABLED));
+-	else if (flags & GNT_TEXT_FLAG_HIGHLIGHT)
++		fl |= A_DIM;
++
++	if (flags & GNT_TEXT_FLAG_HIGHLIGHT)
+ 		fl |= (A_DIM | gnt_color_pair(GNT_COLOR_HIGHLIGHT));
+ 	else if ((flags & A_COLOR) == 0)
+ 		fl |= gnt_color_pair(GNT_COLOR_NORMAL);
+diff --git a/gntutils.c b/gntutils.c
+index 894aed5..52115c1 100644
+--- a/gntutils.c
++++ b/gntutils.c
+@@ -330,6 +330,158 @@ void gnt_util_parse_widgets(const char *string, int num, ...)
+ }
+ 
+ #ifndef NO_LIBXML
++static const char *
++purple_markup_unescape_entity(const char *text, int *length)
++{
++	const char *pln;
++	int len;
++
++	if (!text || *text != '&')
++		return NULL;
++
++#define IS_ENTITY(s)  (!g_ascii_strncasecmp(text, s, (len = sizeof(s) - 1)))
++
++	if(IS_ENTITY("&amp;"))
++		pln = "&";
++	else if(IS_ENTITY("&lt;"))
++		pln = "<";
++	else if(IS_ENTITY("&gt;"))
++		pln = ">";
++	else if(IS_ENTITY("&nbsp;"))
++		pln = " ";
++	else if(IS_ENTITY("&copy;"))
++		pln = "\302\251";      /* or use g_unichar_to_utf8(0xa9); */
++	else if(IS_ENTITY("&quot;"))
++		pln = "\"";
++	else if(IS_ENTITY("&reg;"))
++		pln = "\302\256";      /* or use g_unichar_to_utf8(0xae); */
++	else if(IS_ENTITY("&apos;"))
++		pln = "\'";
++	else if(text[1] == '#' && (g_ascii_isxdigit(text[2]) || text[2] == 'x')) {
++		static char buf[7];
++		const char *start = text + 2;
++		char *end;
++		guint64 pound;
++		int base = 10;
++		int buflen;
++
++		if (*start == 'x') {
++			base = 16;
++			start++;
++		}
++
++		pound = g_ascii_strtoull(start, &end, base);
++		if (pound == 0 || pound > INT_MAX || *end != ';') {
++			return NULL;
++		}
++
++		len = (end - text) + 1;
++
++		buflen = g_unichar_to_utf8((gunichar)pound, buf);
++		buf[buflen] = '\0';
++		pln = buf;
++	}
++	else
++		return NULL;
++
++	if (length)
++		*length = len;
++	return pln;
++}
++
++static char *purple_unescape_html(const char *html)
++{
++	GString *ret;
++	const char *c = html;
++
++	if (html == NULL)
++		return NULL;
++
++	ret = g_string_new("");
++	while (*c) {
++		int len;
++		const char *ent;
++
++		if ((ent = purple_markup_unescape_entity(c, &len)) != NULL) {
++			g_string_append(ret, ent);
++			c += len;
++		} else if (!strncmp(c, "<br>", 4)) {
++			g_string_append_c(ret, '\n');
++			c += 4;
++		} else {
++			g_string_append_c(ret, *c);
++			c++;
++		}
++	}
++
++	return g_string_free(ret, FALSE);
++}
++
++static char *
++purple_markup_get_css_property(const gchar *style,
++				const gchar *opt)
++{
++	const gchar *css_str = style;
++	const gchar *css_value_start;
++	const gchar *css_value_end;
++	gchar *tmp;
++	gchar *ret;
++
++	g_return_val_if_fail(opt != NULL, NULL);
++
++	if (!css_str)
++		return NULL;
++
++	/* find the CSS property */
++	while (1)
++	{
++		/* skip whitespace characters */
++		while (*css_str && g_ascii_isspace(*css_str))
++			css_str++;
++		if (!g_ascii_isalpha(*css_str))
++			return NULL;
++		if (g_ascii_strncasecmp(css_str, opt, strlen(opt)))
++		{
++			/* go to next css property positioned after the next ';' */
++			while (*css_str && *css_str != '"' && *css_str != ';')
++				css_str++;
++			if(*css_str != ';')
++				return NULL;
++			css_str++;
++		}
++		else
++			break;
++	}
++
++	/* find the CSS value position in the string */
++	css_str += strlen(opt);
++	while (*css_str && g_ascii_isspace(*css_str))
++		css_str++;
++	if (*css_str != ':')
++		return NULL;
++	css_str++;
++	while (*css_str && g_ascii_isspace(*css_str))
++		css_str++;
++	if (*css_str == '\0' || *css_str == '"' || *css_str == ';')
++		return NULL;
++
++	/* mark the CSS value */
++	css_value_start = css_str;
++	while (*css_str && *css_str != '"' && *css_str != ';')
++		css_str++;
++	css_value_end = css_str - 1;
++
++	/* Removes trailing whitespace */
++	while (css_value_end > css_value_start && g_ascii_isspace(*css_value_end))
++		css_value_end--;
++
++	tmp = g_strndup(css_value_start, css_value_end - css_value_start + 1);
++	ret = purple_unescape_html(tmp);
++	g_free(tmp);
++
++	return ret;
++}
++
+ static void
+ util_parse_html_to_tv(xmlNode *node, GntTextView *tv, GntTextFormatFlags flag)
+ {
+@@ -340,7 +492,11 @@ util_parse_html_to_tv(xmlNode *node, GntTextView *tv, GntTextFormatFlags flag)
+ 	gboolean insert_nl_s = FALSE, insert_nl_e = FALSE;
+ 
+ 	if (node == NULL || node->name == NULL || node->type != XML_ELEMENT_NODE)
++	{
++		if (node->type == XML_TEXT_NODE)
++			gnt_text_view_append_text_with_flags(tv, (char *)node->content, flag);
+ 		return;
++	}
+ 
+ 	name = (char*)node->name;
+ 	if (g_ascii_strcasecmp(name, "b") == 0 ||
+@@ -367,6 +523,41 @@ util_parse_html_to_tv(xmlNode *node, GntTextView *tv, GntTextFormatFlags flag)
+ 		insert_nl_s = TRUE;
+ 		insert_nl_e = TRUE;
+ 		flag |= GNT_TEXT_FLAG_BOLD | GNT_TEXT_FLAG_UNDERLINE;
++	} else if (g_ascii_strcasecmp(name, "span") == 0) {
++		xmlChar *style = xmlGetProp(node, (xmlChar *)"style");
++		if (style)
++		{
++			gchar *color, *textdec, *weight;
++			color = purple_markup_get_css_property((char *)style, "color");
++			textdec = purple_markup_get_css_property((char *)style, "text-decoration");
++			weight = purple_markup_get_css_property((char *)style, "font-weight");
++
++			if (color)
++			{
++				/* should use gdk_color_parse or similar */
++				if (!g_ascii_strcasecmp(color, "red"))
++					flag |= gnt_color_pair(GNT_COLOR_RED);
++				else if (!g_ascii_strcasecmp(color, "green"))
++					flag |= gnt_color_pair(GNT_COLOR_GREEN);
++				else if (!g_ascii_strcasecmp(color, "yellow"))
++					flag |= gnt_color_pair(GNT_COLOR_YELLOW);
++				else if (!g_ascii_strcasecmp(color, "blue"))
++					flag |= gnt_color_pair(GNT_COLOR_BLUE);
++				else if (!g_ascii_strcasecmp(color, "magenta"))
++					flag |= gnt_color_pair(GNT_COLOR_MAGENTA);
++				else if (!g_ascii_strcasecmp(color, "cyan"))
++					flag |= gnt_color_pair(GNT_COLOR_CYAN);
++			}
++			if (weight && !g_ascii_strcasecmp(textdec, "bold"))
++				flag |= GNT_TEXT_FLAG_BOLD;
++			if (textdec && !g_ascii_strcasecmp(textdec, "underline"))
++				flag |= GNT_TEXT_FLAG_UNDERLINE;
++
++			g_free(weight);
++			g_free(textdec);
++			g_free(color);
++			xmlFree(style);
++		}
+ 	} else {
+ 		/* XXX: Process other possible tags */
+ 	}
+@@ -375,7 +566,7 @@ util_parse_html_to_tv(xmlNode *node, GntTextView *tv, GntTextFormatFlags flag)
+ 		gnt_text_view_append_text_with_flags(tv, "\n", flag);
+ 
+ 	for (ch = node->children; ch; ch = ch->next) {
+-		if (ch->type == XML_ELEMENT_NODE) {
++		if (ch->type == XML_ELEMENT_NODE /* || ch->type == XML_TEXT_NODE */) {
+ 			util_parse_html_to_tv(ch, tv, flag);
+ 		} else if (ch->type == XML_TEXT_NODE) {
+ 			content = (char*)xmlNodeGetContent(ch);
+@@ -396,15 +587,14 @@ util_parse_html_to_tv(xmlNode *node, GntTextView *tv, GntTextFormatFlags flag)
+ }
+ #endif
+ 
+-gboolean gnt_util_parse_xhtml_to_textview(const char *string, GntTextView *tv)
++gboolean gnt_util_parse_xhtml_to_textview(const char *string, GntTextView *tv, GntTextFormatFlags flag)
+ {
+ #ifdef NO_LIBXML
+ 	return FALSE;
+ #else
+ 	xmlParserCtxtPtr ctxt;
+-	xmlDocPtr doc;
++	xmlDocPtr doc = NULL;
+ 	xmlNodePtr node;
+-	GntTextFormatFlags flag = GNT_TEXT_FLAG_NORMAL;
+ 	gboolean ret = FALSE;
+ 
+ 	ctxt = xmlNewParserCtxt();
+@@ -415,6 +605,11 @@ gboolean gnt_util_parse_xhtml_to_textview(const char *string, GntTextView *tv)
+ 		xmlFreeDoc(doc);
+ 		ret = TRUE;
+ 	}
++	else
++	{
++		gnt_text_view_append_text_with_flags(tv, "(HTML parse error) ", flag | GNT_TEXT_FLAG_BOLD);
++		gnt_text_view_append_text_with_flags(tv, string, flag);
++	}
+ 	xmlFreeParserCtxt(ctxt);
+ 	return ret;
+ #endif
+diff --git a/gntutils.h b/gntutils.h
+index b6aac61..7e65601 100644
+--- a/gntutils.h
++++ b/gntutils.h
+@@ -163,7 +163,7 @@ void gnt_util_parse_widgets(const char *string, int num, ...);
+  *
+  * Since: 2.2.0
+  */
+-gboolean gnt_util_parse_xhtml_to_textview(const char *string, GntTextView *tv);
++gboolean gnt_util_parse_xhtml_to_textview(const char *string, GntTextView *tv, GntTextFormatFlags flag);
+ 
+ /**
+  * gnt_util_set_trigger_widget:
+diff --git a/gntwidget.h b/gntwidget.h
+index 28ad95a..cbddc5d 100644
+--- a/gntwidget.h
++++ b/gntwidget.h
+@@ -130,6 +130,7 @@ typedef enum _GntWidgetFlags
+ 	GNT_WIDGET_INVISIBLE      = 1 << 10,
+ 	GNT_WIDGET_TRANSIENT      = 1 << 11,
+ 	GNT_WIDGET_DISABLE_ACTIONS = 1 << 12,
++	GNT_WIDGET_SWITCH_SKIP	  = 1 << 13,
+ } GntWidgetFlags;
+ #else
+ typedef enum _GntWidgetFlags
+@@ -183,6 +184,7 @@ struct _GntWidget
+ 
+ 	struct _GntWidgetPriv GNTSEAL(priv);
+ 	WINDOW *GNTSEAL(window);
++	struct _GntNode *GNTSEAL(wmnode);
+ 
+ 	/*< private >*/
+     void (*gnt_reserved1)(void);
+diff --git a/gntwm.c b/gntwm.c
+index ffb1f4a..0cbf785 100644
+--- a/gntwm.c
++++ b/gntwm.c
+@@ -116,14 +116,20 @@ g_list_bring_to_front(GList *list, gpointer data)
+ }
+ 
+ static void
+-free_node(gpointer data)
++free_node(GntNode *node)
+ {
+-	GntNode *node = data;
+ 	hide_panel(node->panel);
+ 	del_panel(node->panel);
+ 	g_free(node);
+ }
+ 
++static GntNode *
++gnt_wm_widget_node(GntWM *wm, GntWidget *widget)
++{
++	/* return g_hash_table_lookup(wm->nodes, widget); */
++	return widget->wmnode;
++}
++
+ void
+ gnt_wm_copy_win(GntWidget *widget, GntNode *node)
+ {
+@@ -241,7 +247,7 @@ update_screen(GntWM *wm)
+ 	if (wm->menu) {
+ 		GntMenu *top = wm->menu;
+ 		while (top) {
+-			GntNode *node = g_hash_table_lookup(wm->nodes, top);
++			GntNode *node = gnt_wm_widget_node(wm, GNT_WIDGET(top));
+ 			if (node)
+ 				top_panel(node->panel);
+ 			top = top->submenu;
+@@ -293,8 +299,10 @@ sanitize_position(GntWidget *widget, int *x, int *y, gboolean m)
+ }
+ 
+ static void
+-refresh_node(GntWidget *widget, GntNode *node, gpointer m)
++refresh_node(GntNode *node, gpointer m)
+ {
++	GntWidget *widget = node->me;
++
+ 	int x, y, w, h;
+ 	int nw, nh;
+ 
+@@ -402,7 +410,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
+ 	wm->tagged = NULL;
+ 	wm->windows = NULL;
+ 	wm->actions = NULL;
+-	wm->nodes = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, free_node);
++	wm->nodes = NULL;
+ 	wm->positions = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+ 	if (gnt_style_get_bool(GNT_STYLE_REMPOS, TRUE))
+ 		read_window_positions(wm);
+@@ -441,7 +449,7 @@ switch_window(GntWM *wm, int direction, gboolean urgent)
+ 			pos = 0;
+ 		} else
+ 			wid = g_list_nth_data(wm->cws->list, pos);
+-	} while (urgent && !gnt_widget_get_is_urgent(wid) && pos != orgpos);
++	} while ((GNT_WIDGET_IS_FLAG_SET(wid, GNT_WIDGET_SWITCH_SKIP) || (urgent && !gnt_widget_get_is_urgent(wid))) && pos != orgpos);
+ 
+ 	gnt_wm_raise_window(wm, wid);
+ }
+@@ -496,7 +504,7 @@ window_scroll_up(GntBindable *bindable, GList *null)
+ 		return TRUE;
+ 
+ 	window = wm->cws->ordered->data;
+-	node = g_hash_table_lookup(wm->nodes, window);
++	node = gnt_wm_widget_node(wm, window);
+ 	if (!node)
+ 		return TRUE;
+ 
+@@ -522,7 +530,7 @@ window_scroll_down(GntBindable *bindable, GList *null)
+ 		return TRUE;
+ 
+ 	window = wm->cws->ordered->data;
+-	node = g_hash_table_lookup(wm->nodes, window);
++	node = gnt_wm_widget_node(wm, window);
+ 	if (!node)
+ 		return TRUE;
+ 
+@@ -897,6 +905,7 @@ shift_window(GntWM *wm, GntWidget *widget, int dir)
+ 	all = g_list_delete_link(all, list);
+ 	wm->cws->list = all;
+ 	gnt_ws_draw_taskbar(wm->cws, FALSE);
++#ifdef BROKENWINCH
+ 	if (wm->cws->ordered) {
+ 		GntWidget *w = wm->cws->ordered->data;
+ 		GntNode *node = g_hash_table_lookup(wm->nodes, w);
+@@ -904,6 +913,7 @@ shift_window(GntWM *wm, GntWidget *widget, int dir)
+ 		update_panels();
+ 		doupdate();
+ 	}
++#endif
+ }
+ 
+ static gboolean
+@@ -1058,7 +1068,7 @@ window_reverse(GntWidget *win, gboolean set, GntWM *wm)
+ 	for (i = 0; i < h; i += reverse_char(d, i, w-1, set));
+ 
+ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+-	gnt_wm_copy_win(win, g_hash_table_lookup(wm->nodes, win));
++	gnt_wm_copy_win(win, gnt_wm_widget_node(wm, win));
+ G_GNUC_END_IGNORE_DEPRECATIONS
+ 	update_screen(wm);
+ }
+@@ -1128,14 +1138,16 @@ refresh_screen(GntBindable *bindable, GList *null)
+ 	endwin();
+ 	refresh();
+ 
+-	g_hash_table_foreach(wm->nodes, (GHFunc)refresh_node, GINT_TO_POINTER(TRUE));
++	g_list_foreach(wm->nodes, (GFunc)refresh_node, GINT_TO_POINTER(TRUE));
+ 	g_signal_emit(wm, signals[SIG_TERMINAL_REFRESH], 0);
+ 
++#ifdef BROKENWINCH
+ 	for (iter = g_list_last(wm->cws->ordered); iter; iter = iter->prev) {
+ 		GntWidget *w = iter->data;
+ 		GntNode *node = g_hash_table_lookup(wm->nodes, w);
+ 		top_panel(node->panel);
+ 	}
++#endif
+ 
+ 	gnt_ws_draw_taskbar(wm->cws, TRUE);
+ 	update_screen(wm);
+@@ -1372,11 +1384,9 @@ help_for_widget(GntBindable *bindable, GList *null)
+ }
+ 
+ static void
+-accumulate_windows(gpointer window, gpointer node, gpointer p)
++accumulate_windows(GntNode *node, GList **list)
+ {
+-	GList *list = *(GList**)p;
+-	list = g_list_prepend(list, window);
+-	*(GList**)p = list;
++	*list = g_list_prepend(*list, node->me);
+ }
+ 
+ static void
+@@ -1384,10 +1394,10 @@ gnt_wm_destroy(GObject *obj)
+ {
+ 	GntWM *wm = GNT_WM(obj);
+ 	GList *list = NULL;
+-	g_hash_table_foreach(wm->nodes, accumulate_windows, &list);
++	g_list_foreach(wm->nodes, (GFunc)accumulate_windows, &list);
+ 	g_list_foreach(list, (GFunc)gnt_widget_destroy, NULL);
+ 	g_list_free(list);
+-	g_hash_table_destroy(wm->nodes);
++	g_list_free(wm->nodes);
+ 	wm->nodes = NULL;
+ 
+ 	while (wm->workspaces) {
+@@ -1660,9 +1670,9 @@ gnt_wm_switch_workspace(GntWM *wm, gint n)
+ 		gnt_widget_destroy(wm->_list.window);
+ 	}
+ 	ensure_normal_mode(wm);
+-	gnt_ws_hide(wm->cws, wm->nodes);
++	gnt_ws_hide(wm->cws);
+ 	wm->cws = s;
+-	gnt_ws_show(wm->cws, wm->nodes);
++	gnt_ws_show(wm->cws);
+ 
+ 	gnt_ws_draw_taskbar(wm->cws, TRUE);
+ 	update_screen(wm);
+@@ -1710,7 +1720,7 @@ gnt_wm_widget_move_workspace(GntWM *wm, GntWS *neww, GntWidget *widget)
+ 	GntNode *node;
+ 	if (!oldw || oldw == neww)
+ 		return;
+-	node = g_hash_table_lookup(wm->nodes, widget);
++	node = gnt_wm_widget_node(wm, widget);
+ 	if (node && node->ws == neww)
+ 		return;
+ 
+@@ -1720,9 +1730,9 @@ gnt_wm_widget_move_workspace(GntWM *wm, GntWS *neww, GntWidget *widget)
+ 	gnt_ws_remove_widget(oldw, widget);
+ 	gnt_ws_add_widget(neww, widget);
+ 	if (neww == wm->cws) {
+-		gnt_ws_widget_show(widget, wm->nodes);
++		gnt_ws_widget_show(widget);
+ 	} else {
+-		gnt_ws_widget_hide(widget, wm->nodes);
++		gnt_ws_widget_hide(widget);
+ 	}
+ }
+ 
+@@ -1809,9 +1819,15 @@ gnt_wm_new_window_real(GntWM *wm, GntWidget *widget)
+ 	node->me = widget;
+ 	node->scroll = 0;
+ 
+-	g_hash_table_replace(wm->nodes, widget, node);
++	if (widget->wmnode)
++	{
++		wm->nodes = g_list_remove(wm->nodes, widget->wmnode);
++		free_node(widget->wmnode);
++	}
++	widget->wmnode = node;
++	wm->nodes = g_list_append(wm->nodes, node);
+ 
+-	refresh_node(widget, node, GINT_TO_POINTER(TRUE));
++	refresh_node(node, GINT_TO_POINTER(TRUE));
+ 
+ 	transient = gnt_widget_get_transient(node->me);
+ 
+@@ -1870,7 +1886,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
+ 			gnt_widget_set_focus(node->me, FALSE);
+ 			gnt_widget_set_urgent(node->me);
+ 			if (wm->cws != ws)
+-				gnt_ws_widget_hide(widget, wm->nodes);
++				gnt_ws_widget_hide(widget);
+ 		}
+ 	}
+ }
+@@ -1881,7 +1897,7 @@ void gnt_wm_new_window(GntWM *wm, GntWidget *widget)
+ 		widget = widget->parent;
+ 
+ 	if (!gnt_widget_get_visible(widget) ||
+-	    g_hash_table_lookup(wm->nodes, widget)) {
++	    gnt_wm_widget_node(wm, widget)) {
+ 		update_screen(wm);
+ 		return;
+ 	}
+@@ -1927,11 +1943,16 @@ void gnt_wm_window_close(GntWM *wm, GntWidget *widget)
+ 
+ 	s = gnt_wm_widget_find_workspace(wm, widget);
+ 
+-	if (g_hash_table_lookup(wm->nodes, widget) == NULL)
++	if (gnt_wm_widget_node(wm, widget) == NULL)
+ 		return;
+ 
+ 	g_signal_emit(wm, signals[SIG_CLOSE_WIN], 0, widget);
+-	g_hash_table_remove(wm->nodes, widget);
++	if (widget->wmnode)
++	{
++		wm->nodes = g_list_remove(wm->nodes, widget->wmnode);
++		free_node(widget->wmnode);
++		widget->wmnode = NULL;
++	}
+ 
+ 	if (wm->windows) {
+ 		gnt_tree_remove(GNT_TREE(wm->windows->tree), widget);
+@@ -2082,13 +2103,13 @@ gboolean gnt_wm_process_input(GntWM *wm, const char *keys)
+ static void
+ gnt_wm_win_resized(GntWM *wm, GntNode *node)
+ {
+-	/*refresh_node(node->me, node, NULL);*/
++	/*refresh_node(node, NULL);*/
+ }
+ 
+ static void
+ gnt_wm_win_moved(GntWM *wm, GntNode *node)
+ {
+-	refresh_node(node->me, node, NULL);
++	refresh_node(node, NULL);
+ }
+ 
+ void gnt_wm_resize_window(GntWM *wm, GntWidget *widget, int width, int height)
+@@ -2099,7 +2120,7 @@ void gnt_wm_resize_window(GntWM *wm, GntWidget *widget, int width, int height)
+ 
+ 	while (widget->parent)
+ 		widget = widget->parent;
+-	node = g_hash_table_lookup(wm->nodes, widget);
++	node = gnt_wm_widget_node(wm, widget);
+ 	if (!node)
+ 		return;
+ 
+@@ -2170,7 +2191,7 @@ void gnt_wm_move_window(GntWM *wm, GntWidget *widget, int x, int y)
+ 
+ 	while (widget->parent)
+ 		widget = widget->parent;
+-	node = g_hash_table_lookup(wm->nodes, widget);
++	node = gnt_wm_widget_node(wm, widget);
+ 	if (!node)
+ 		return;
+ 
+@@ -2201,7 +2222,7 @@ void gnt_wm_move_window(GntWM *wm, GntWidget *widget, int x, int y)
+ static void
+ gnt_wm_give_focus(GntWM *wm, GntWidget *widget)
+ {
+-	GntNode *node = g_hash_table_lookup(wm->nodes, widget);
++	GntNode *node = gnt_wm_widget_node(wm, widget);
+ 
+ 	if (!node)
+ 		return;
+@@ -2219,7 +2240,7 @@ gnt_wm_give_focus(GntWM *wm, GntWidget *widget)
+ 	top_panel(node->panel);
+ 
+ 	if (wm->_list.window) {
+-		GntNode *nd = g_hash_table_lookup(wm->nodes, wm->_list.window);
++		GntNode *nd = gnt_wm_widget_node(wm, wm->_list.window);
+ 		top_panel(nd->panel);
+ 	}
+ 	gnt_ws_draw_taskbar(wm->cws, FALSE);
+@@ -2240,7 +2261,7 @@ void gnt_wm_update_window(GntWM *wm, GntWidget *widget)
+ 	}
+ 
+ 	ws = gnt_wm_widget_find_workspace(wm, widget);
+-	node = g_hash_table_lookup(wm->nodes, widget);
++	node = gnt_wm_widget_node(wm, widget);
+ 	if (node == NULL) {
+ 		gnt_wm_new_window(wm, widget);
+ 	} else
+diff --git a/gntwm.h b/gntwm.h
+index 3bb09b5..a95ab8b 100644
+--- a/gntwm.h
++++ b/gntwm.h
+@@ -131,7 +131,7 @@ struct _GntWM
+ 		*GNTSEAL(windows),         /* Window-list window */
+ 		*GNTSEAL(actions);         /* Action-list window */
+ 
+-	GHashTable *GNTSEAL(nodes);    /* GntWidget -> GntNode */
++	GList *GNTSEAL(nodes);    /* GntNode */
+ 	GHashTable *GNTSEAL(name_places);    /* window name -> ws*/
+ 	GHashTable *GNTSEAL(title_places);    /* window title -> ws */
+ 
+diff --git a/gntws.c b/gntws.c
+index 6a71df9..11a9949 100644
+--- a/gntws.c
++++ b/gntws.c
+@@ -30,10 +30,10 @@
+ #include "gntws.h"
+ 
+ static void
+-widget_hide(gpointer data, gpointer nodes)
++widget_hide(gpointer data, gpointer unused)
+ {
+ 	GntWidget *widget = GNT_WIDGET(data);
+-	GntNode *node = g_hash_table_lookup(nodes, widget);
++	GntNode *node = widget->wmnode;
+ 	if (GNT_IS_WINDOW(widget))
+ 		gnt_window_workspace_hiding(GNT_WINDOW(widget));
+ 	if (node)
+@@ -41,14 +41,15 @@ widget_hide(gpointer data, gpointer nodes)
+ }
+ 
+ static void
+-widget_show(gpointer data, gpointer nodes)
++widget_show(gpointer data)
+ {
+-	GntNode *node = g_hash_table_lookup(nodes, data);
+-	gnt_widget_set_visible(GNT_WIDGET(data), TRUE);
++	GntWidget *widget = GNT_WIDGET(data);
++	GntNode *node = widget->wmnode;
++	gnt_widget_set_visible(widget, TRUE);
+ 	if (node) {
+ 		show_panel(node->panel);
+ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+-		gnt_wm_copy_win(GNT_WIDGET(data), node);
++		gnt_wm_copy_win(widget, node);
+ G_GNUC_END_IGNORE_DEPRECATIONS
+ 	}
+ }
+@@ -76,15 +77,22 @@ gnt_ws_draw_taskbar(GntWS *ws, gboolean reposition)
+ 	wbkgdset(taskbar, '\0' | gnt_color_pair(GNT_COLOR_NORMAL));
+ 	werase(taskbar);
+ 
+-	n = g_list_length(ws->list);
++	for (n = 0, iter = ws->list; iter; iter = iter->next) {
++		if (GNT_WIDGET_IS_FLAG_SET(iter->data, GNT_WIDGET_SWITCH_SKIP))
++			continue;
++		n++;
++	}
+ 	if (n)
+ 		width = getmaxx(stdscr) / n;
+ 
+-	for (i = 0, iter = ws->list; iter; iter = iter->next, i++) {
++	for (i = 0, iter = ws->list; iter; iter = iter->next) {
+ 		GntWidget *w = iter->data;
+ 		int color;
+ 		const char *title;
+ 
++		if (GNT_WIDGET_IS_FLAG_SET(w, GNT_WIDGET_SWITCH_SKIP))
++			continue;
++
+ 		if (w == ws->ordered->data) {
+ 			/* This is the current window in focus */
+ 			color = GNT_COLOR_TITLE;
+@@ -103,6 +111,7 @@ gnt_ws_draw_taskbar(GntWS *ws, gboolean reposition)
+ 		mvwprintw(taskbar, 0, width * i, "%s", title ? C_(title) : "<gnt>");
+ 		if (i)
+ 			mvwaddch(taskbar, 0, width *i - 1, ACS_VLINE | A_STANDOUT | gnt_color_pair(GNT_COLOR_NORMAL));
++		i++;
+ 	}
+ 	wrefresh(taskbar);
+ }
+@@ -140,27 +149,27 @@ gnt_ws_set_name(GntWS *ws, const gchar *name)
+ }
+ 
+ void
+-gnt_ws_hide(GntWS *ws, GHashTable *nodes)
++gnt_ws_hide(GntWS *ws)
+ {
+-	g_list_foreach(ws->ordered, widget_hide, nodes);
++	g_list_foreach(ws->ordered, (GFunc)widget_hide, NULL);
+ }
+ 
+-void gnt_ws_widget_hide(GntWidget *widget, GHashTable *nodes)
++void gnt_ws_widget_hide(GntWidget *widget)
+ {
+-	widget_hide(widget, nodes);
++	widget_hide(widget, NULL);
+ }
+ 
+-void gnt_ws_widget_show(GntWidget *widget, GHashTable *nodes)
++void gnt_ws_widget_show(GntWidget *widget)
+ {
+-	widget_show(widget, nodes);
++	widget_show(widget);
+ }
+ 
+ void
+-gnt_ws_show(GntWS *ws, GHashTable *nodes)
++gnt_ws_show(GntWS *ws)
+ {
+ 	GList *l;
+ 	for (l = g_list_last(ws->ordered); l; l = g_list_previous(l))
+-		widget_show(l->data, nodes);
++		widget_show(l->data);
+ }
+ 
+ GType
+diff --git a/gntws.h b/gntws.h
+index bb80434..8d3f5ef 100644
+--- a/gntws.h
++++ b/gntws.h
+@@ -136,24 +136,21 @@ void gnt_ws_remove_widget(GntWS *ws, GntWidget *widget);
+ /**
+  * gnt_ws_widget_hide:
+  * @widget:  The widget to hide.
+- * @nodes:   A hashtable containing information about the widgets.
+  *
+- * Hide a widget in a workspace.
+  *
+  * Since: 2.1.0
+  */
+-void gnt_ws_widget_hide(GntWidget *widget, GHashTable *nodes);
++void gnt_ws_widget_hide(GntWidget *widget);
+ 
+ /**
+  * gnt_ws_widget_show:
+  * @widget:   The widget to show.
+- * @nodes:   A hashtable containing information about the widgets.
+  *
+  * Show a widget in a workspace.
+  *
+  * Since: 2.1.0
+  */
+-void gnt_ws_widget_show(GntWidget *widget, GHashTable *nodes);
++void gnt_ws_widget_show(GntWidget *widget);
+ 
+ /**
+  * gnt_ws_draw_taskbar:
+@@ -175,7 +172,7 @@ void gnt_ws_draw_taskbar(GntWS *ws, gboolean reposition);
+  *
+  * Since: 2.1.0
+  */
+-void gnt_ws_hide(GntWS *ws, GHashTable *table);
++void gnt_ws_hide(GntWS *ws);
+ 
+ /**
+  * gnt_ws_show:
+@@ -186,7 +183,7 @@ void gnt_ws_hide(GntWS *ws, GHashTable *table);
+  *
+  * Since: 2.1.0
+  */
+-void gnt_ws_show(GntWS *ws, GHashTable *table);
++void gnt_ws_show(GntWS *ws);
+ 
+ /**
+  * gnt_ws_get_name:
+diff --git a/wms/full.c b/wms/full.c
+new file mode 100644
+index 0000000..dbee4c7
+--- /dev/null
++++ b/wms/full.c
+@@ -0,0 +1,202 @@
++#include <stdlib.h>
++#include <string.h>
++#include <sys/types.h>
++
++#include "gnt.h"
++#include "gntbox.h"
++#include "gntmenu.h"
++#include "gntstyle.h"
++#include "gntwm.h"
++#include "gntwindow.h"
++#include "gntlabel.h"
++
++#define TYPE_FULL				(full_get_gtype())
++
++typedef struct _Full
++{
++	GntWM inherit;
++
++	gboolean borders;
++	int blistwidth;
++} Full;
++
++typedef struct _FullClass
++{
++	GntWMClass inherit;
++} FullClass;
++
++GType full_get_gtype(void);
++void gntwm_init(GntWM **wm);
++
++static void (*org_new_window)(GntWM *wm, GntWidget *win);
++
++static void
++draw_line_separators(Full *full)
++{
++	/*
++	wclear(stdscr);
++	if (full->blistwidth >= 0)
++		mvwvline(stdscr, 0, getmaxx(stdscr) - full->blistwidth - 1,
++				ACS_VLINE | COLOR_PAIR(GNT_COLOR_NORMAL), getmaxy(stdscr) - 1);
++	*/
++}
++
++static gboolean
++is_blist(GntWidget *win)
++{
++	const char *name = gnt_widget_get_name(win);
++	if (name && strcmp(name, "buddylist") == 0)
++		return TRUE;
++	return FALSE;
++}
++
++static void
++relocate_win(Full *full, GntWidget *win, int x, int y, int w, int h)
++{
++	GntNode *node = win->wmnode; // g_hash_table_lookup(GNT_WM(full)->nodes, win);
++	// purple_debug(PURPLE_DEBUG_INFO, "full", "relocate %s %p %p %d,%d,%d,%d\n", gnt_widget_get_name(win), win, win->parent, x,y,w,h);
++	if (!full->borders && !GNT_WIDGET_IS_FLAG_SET(win, GNT_WIDGET_NO_BORDER))
++	{
++		GNT_WIDGET_SET_FLAGS(win, GNT_WIDGET_NO_BORDER | GNT_WIDGET_NO_SHADOW);
++		w += 2; h += 2;
++	}
++	if (node)
++	{
++		hide_panel(node->panel);
++	}
++	gnt_widget_set_size(win, w, h);
++	gnt_widget_set_position(win, x, y);
++	if (node)
++	{
++		wresize(node->window, h, w);
++		replace_panel(node->panel, node->window);
++		show_panel(node->panel);
++		move_panel(node->panel, y, x);
++	}
++}
++
++static void
++place_win(Full *full, GntWidget *win)
++{
++	if (is_blist(win))
++	{
++		if (full->blistwidth <= 0)
++			gnt_widget_get_size(win, &full->blistwidth, NULL);
++		relocate_win(full, win, getmaxx(stdscr)-full->blistwidth-full->borders, 0, full->blistwidth+full->borders, getmaxy(stdscr)-1);
++	}
++	else if (!GNT_IS_MENU(win) && !GNT_WIDGET_IS_FLAG_SET(win, GNT_WIDGET_TRANSIENT)) {
++		relocate_win(full, win, 0, 0, getmaxx(stdscr) - full->blistwidth, getmaxy(stdscr)-1);
++	}
++}
++
++static void
++full_new_window(GntWM *wm, GntWidget *win)
++{
++	Full *full = (Full *)wm;
++	if (is_blist(win))
++		GNT_WIDGET_SET_FLAGS(win, GNT_WIDGET_SWITCH_SKIP);
++	place_win(full, win);
++	org_new_window(wm, win);
++}
++
++static void
++full_terminal_refresh(GntWM *wm)
++{
++	Full *full = (Full *)wm;
++	GList *iter;
++	for (iter = wm->cws->list; iter; iter = iter->next) {
++		GntWidget *win = GNT_WIDGET(iter->data);
++		place_win(full, win);
++	}
++
++	draw_line_separators(full);
++	// update_panels();
++	// doupdate();
++}
++
++static gboolean
++focus_blist(GntBindable *bindable, GList *null)
++{
++	// purple_blist_show();
++	GntWM *wm = GNT_WM(bindable);
++	GList *iter;
++	for (iter = wm->acts; iter; iter = iter->next) {
++		GntAction *action = iter->data;
++		if (!strcmp(action->label, "Buddy List")) {
++			action->callback();
++			break;
++		}
++	}
++	return TRUE;
++}
++
++static gboolean
++full_only_transients(GntWM *wm, GntWidget *win, int *a, int *b)
++{
++	// purple_debug(PURPLE_DEBUG_INFO, "full", "confirm %s %p %p %d,%d\n", gnt_widget_get_name(w), w, w->parent, *a,*b);
++	return GNT_IS_MENU(win) || GNT_WIDGET_IS_FLAG_SET(win, GNT_WIDGET_TRANSIENT);
++}
++
++static void
++full_class_init(FullClass *klass)
++{
++	GntWMClass *pclass = GNT_WM_CLASS(klass);
++
++	org_new_window = pclass->new_window;
++
++	pclass->new_window = full_new_window;
++	//pclass->window_resized = full_window_resized;
++	//pclass->close_window = full_close_window;
++	pclass->window_resize_confirm = full_only_transients;
++	pclass->window_move_confirm = full_only_transients;
++	pclass->terminal_refresh = full_terminal_refresh;
++
++	gnt_bindable_class_register_action(GNT_BINDABLE_CLASS(klass), "window-blist", focus_blist, "\033" "b", NULL);
++
++	gnt_style_read_actions(G_OBJECT_CLASS_TYPE(klass), GNT_BINDABLE_CLASS(klass));
++	GNTDEBUG;
++}
++
++void gntwm_init(GntWM **wm)
++{
++	char *style = NULL;
++	Full *full;
++
++	full = g_object_new(TYPE_FULL, NULL);
++	*wm = GNT_WM(full);
++
++	style = gnt_style_get_from_name("full", "blist-width");
++	full->blistwidth = style ? atoi(style) : 0;
++	g_free(style);
++
++	style = gnt_style_get_from_name("full", "borders");
++	full->borders = gnt_style_parse_bool(style);
++	g_free(style);
++}
++
++GType full_get_gtype(void)
++{
++	static GType type = 0;
++
++	if(type == 0) {
++		static const GTypeInfo info = {
++			sizeof(FullClass),
++			NULL,           /* base_init		*/
++			NULL,           /* base_finalize	*/
++			(GClassInitFunc)full_class_init,
++			NULL,
++			NULL,           /* class_data		*/
++			sizeof(Full),
++			0,              /* n_preallocs		*/
++			NULL,	        /* instance_init	*/
++			NULL
++		};
++
++		type = g_type_register_static(GNT_TYPE_WM,
++		                              "GntFull",
++		                              &info, 0);
++	}
++
++	return type;
++}
++
+diff --git a/wms/irssi.c b/wms/irssi.c
+index f8c6d79..5c73b92 100644
+--- a/wms/irssi.c
++++ b/wms/irssi.c
+@@ -316,7 +316,7 @@ static void
+ irssi_terminal_refresh(GntWM *wm)
+ {
+ 	draw_line_separators((Irssi*)wm);
+-	g_hash_table_foreach(wm->nodes, (GHFunc)refresh_window, wm);
++	g_list_foreach(wm->nodes, (GHFunc)refresh_window, wm);
+ }
+ 
+ static void
+diff --git a/wms/meson.build b/wms/meson.build
+index f8b6e3c..46ee430 100644
+--- a/wms/meson.build
++++ b/wms/meson.build
+@@ -9,3 +9,8 @@ s = library('s', 's.c',
+     dependencies : [ncurses, gobject, libgnt_dep],
+     name_prefix : '',
+     install : true, install_dir : plugindir)
++
++full = library('full', 'full.c',
++    dependencies : [ncurses, gobject, libgnt_dep],
++    name_prefix : '',
++    install : true, install_dir : plugindir)
