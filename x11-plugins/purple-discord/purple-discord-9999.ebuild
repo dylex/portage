@@ -16,5 +16,8 @@ IUSE=""
 
 DEPEND="net-im/pidgin
 dev-vcs/git
-dev-libs/json-glib"
+dev-libs/json-glib
+media-gfx/qrencode
+media-gfx/imagemagick
+dev-libs/nss"
 RDEPEND="${DEPEND}"
