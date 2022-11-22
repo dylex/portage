@@ -7,7 +7,7 @@ LICENSE="BSD-2"
 SLOT="0"
 
 if [[ ${PV} == *9999 ]] ; then
-	EGIT_REPO_URI="git://github.com/udp/json-parser.git"
+	EGIT_REPO_URI="https://github.com/udp/json-parser.git"
 	inherit git-r3
 else
 	SRC_URI="https://github.com/udp/json-parser/archive/v${PV}.tar.gz -> ${P}.tar.gz"

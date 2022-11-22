@@ -4,7 +4,7 @@ inherit git-r3
 
 DESCRIPTION="A collection fonts for FIGlet"
 HOMEPAGE="http://github.com/cmatsuoka/figlet-fonts"
-EGIT_REPO_URI="git://github.com/cmatsuoka/figlet-fonts.git"
+EGIT_REPO_URI="https://github.com/cmatsuoka/figlet-fonts.git"
 LICENSE="public-domain" # really none
 SLOT="0"
 KEYWORDS="*"

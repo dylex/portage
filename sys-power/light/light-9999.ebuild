@@ -3,7 +3,7 @@ EAPI=6
 inherit git-r3
 
 DESCRIPTION="GNU/Linux application to control backlights"
-EGIT_REPO_URI="git://github.com/haikarainen/${PN}.git"
+EGIT_REPO_URI="https://github.com/haikarainen/${PN}.git"
 HOMEPAGE="https://github.com/haikarainen/{PN}"
 SRC_URI=""
 

@@ -9,7 +9,7 @@ MY_P="${PN}${SLOT}-${PV}"
 
 DESCRIPTION="a general purpose messaging, notification and menuing program for X11."
 HOMEPAGE="http://gotmor.googlepages.com/dzen"
-EGIT_REPO_URI="git://github.com/dylex/dzen.git"
+EGIT_REPO_URI="https://github.com/dylex/dzen.git"
 
 inherit toolchain-funcs multilib git-r3
 

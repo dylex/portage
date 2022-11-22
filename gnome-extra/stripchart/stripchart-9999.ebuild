@@ -7,7 +7,7 @@ MY_P="${PN}-${MY_PV}"
 
 DESCRIPTION="The (ex-)gnome-utils stripchart plotting utility"
 HOMEPAGE="http://github.com/dylex/${PN}"
-EGIT_REPO_URI="git://github.com/dylex/${PN}.git"
+EGIT_REPO_URI="https://github.com/dylex/${PN}.git"
 
 LICENSE="GPL-2"
 SLOT="0"

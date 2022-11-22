@@ -3,7 +3,7 @@ inherit autotools eutils git-r3
 
 DESCRIPTION="rxvt clone based on mrxvt"
 HOMEPAGE="http://materm.sourceforge.net/"
-EGIT_REPO_URI="git://github.com/dylex/drxvt.git"
+EGIT_REPO_URI="https://github.com/dylex/drxvt.git"
 
 LICENSE="GPL-2"
 SLOT="0"
