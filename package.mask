@@ -1,0 +1,2 @@
+app-misc/tmux::gentoo
+x11-misc/xdaliclock::gentoo
