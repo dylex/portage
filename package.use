@@ -1,0 +1,3 @@
+app-editors/vim cscope terminal
+dev-vcs/git -webdav
+sys-boot/grub -fonts -themes
