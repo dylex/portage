@@ -1,0 +1,18 @@
+--- mi/mieq.c	2022/07/12 13:27:57	1.1
++++ mi/mieq.c	2022/10/28 00:11:10
+@@ -550,6 +550,7 @@
+ 
+         master = (dev) ? GetMaster(dev, MASTER_ATTACHED) : NULL;
+ 
++	if (event.any.type == ET_KeyPress || event.any.type == ET_ButtonPress) {
+         if (screenIsSaved == SCREEN_SAVER_ON)
+             dixSaveScreens(serverClient, SCREEN_SAVER_OFF, ScreenSaverReset);
+ #ifdef DPMSExtension
+@@ -559,6 +560,7 @@
+         if (DPMSPowerLevel != DPMSModeOn)
+             DPMSSet(serverClient, DPMSModeOn);
+ #endif
++	}
+ 
+         mieqProcessDeviceEvent(dev, &event, screen);
+ 
