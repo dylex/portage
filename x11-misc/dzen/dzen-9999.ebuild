@@ -1,77 +1,65 @@
-# Copyright 1999-2010 Gentoo Foundation
+# Copyright 1999-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/x11-misc/dzen/dzen-0.8.5.ebuild,v 1.6 2010/06/06 09:49:15 ssuominen Exp $
 
-EAPI=6
+EAPI=7
 
-SLOT="2"
-MY_P="${PN}${SLOT}-${PV}"
+inherit toolchain-funcs git-r3
 
-DESCRIPTION="a general purpose messaging, notification and menuing program for X11."
-HOMEPAGE="http://gotmor.googlepages.com/dzen"
+DESCRIPTION="General purpose messaging, notification, and menu utility"
+HOMEPAGE="https://github.com/robm/dzen"
 EGIT_REPO_URI="https://github.com/dylex/dzen.git"
 
-inherit toolchain-funcs multilib git-r3
-
 LICENSE="MIT"
-KEYWORDS="~amd64"
+KEYWORDS="~amd64 ~x86"
+SLOT="2"
 IUSE="minimal xinerama xpm"
 
-RDEPEND="x11-libs/libX11
+RDEPEND="
+	x11-libs/libX11
+	x11-libs/libXft
 	xinerama? ( x11-libs/libXinerama )
-	xpm? ( x11-libs/libXpm )
-	x11-libs/libXft"
-DEPEND="${RDEPEND}
-	xinerama? ( x11-proto/xineramaproto )"
-
-#S=${WORKDIR}/${MY_P}
+	xpm? ( x11-libs/libXpm )"
+DEPEND="
+	${RDEPEND}
+	x11-base/xorg-proto"
+BDEPEND="
+	virtual/pkgconfig"
 
 src_prepare() {
-	eapply_user
-
-	#cd ${S}
-	sed -i \
-		-e 's:../dzen2:dzen2:' \
-		gadgets/kittscanner.sh || die
-
-	sed -e "s:/usr/local:/usr:g" \
-		-e 's:-Os::g' \
-		-e "s:CFLAGS =:CFLAGS +=:g" \
-		-e '/^CC.*/d' \
-		-e 's:^LDFLAGS =:LDFLAGS +=:' \
-		-e "s:/usr/lib :/usr/$(get_libdir):" \
-		-i config.mk gadgets/config.mk || die "sed failed"
-	sed -i -e "/strip/d" Makefile gadgets/Makefile || die "sed failed"
-	if use xinerama ; then
-		sed -e "/^LIBS/s/$/\ -lXinerama/" \
-			-e "/^CFLAGS/s/$/\ -DDZEN_XINERAMA/" \
-			-i config.mk || die "sed failed"
-	fi
-	if use xpm ; then
-		sed -e "/^LIBS/s/$/\ -lXpm/" \
-			-e "/^CFLAGS/s/$/\ -DDZEN_XPM/" \
-			-i config.mk || die "sed failed"
-	fi
-	chmod +x gadgets/
+	default
+	sed -i '/strip/d; /@echo/d; s/\t@/\t/; s/-L.*/$(X11LIBS)/' \
+		Makefile gadgets/Makefile || die
 }
 
 src_compile() {
-	tc-export CC
-	emake || die "emake failed"
+	local cflags="${CFLAGS} $($(tc-getPKG_CONFIG) --cflags x11)"
+	local libs="$($(tc-getPKG_CONFIG) --libs x11)"
 
 	if ! use minimal ; then
-		cd "${S}"/gadgets
-		emake || die "emake gadgets failed"
+		emake -C gadgets \
+			CC="$(tc-getCC)" CFLAGS="${cflags}" \
+			LDFLAGS="${LDFLAGS}" X11LIBS="${libs}"
 	fi
+
+	local flag
+	# xft always-enabled wrt bug #477656
+	for flag in xft $(usev xinerama) $(usev xpm); do
+		cflags+=" $($(tc-getPKG_CONFIG) --cflags ${flag}) -DDZEN_${flag^^}"
+		libs+=" $($(tc-getPKG_CONFIG) --libs ${flag})"
+	done
+
+	cflags+=" -DVERSION='\"$(ver_cut 1-3)\"'"
+
+	emake CC="$(tc-getCC)" CFLAGS="${cflags}" LIBS="${LDFLAGS} ${libs}"
 }
 
 src_install() {
-	emake DESTDIR="${D}" install || die "emake install failed"
-	dodoc README || die
-
+	emake DESTDIR="${D}" PREFIX="${EPREFIX}/usr" install
+	dodoc README
 	if ! use minimal ; then
-		cd "${S}"/gadgets
-		emake DESTDIR="${D}" install || die "emake gadgets install failed"
-		dodoc README* || die
+		emake DESTDIR="${D}" PREFIX="${EPREFIX}/usr" -C gadgets install
+		dobin gadgets/*.sh
+		dodoc gadgets/README*
 	fi
+	einstalldocs
 }

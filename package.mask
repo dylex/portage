@@ -1,2 +1,3 @@
 app-misc/tmux::gentoo
+x11-misc/dzen::gentoo
 x11-misc/xdaliclock::gentoo
