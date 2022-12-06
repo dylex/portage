@@ -10,3 +10,5 @@ SLOT="0"
 KEYWORDS="amd64"
 FONT_S=${S}
 FONT_SUFFIX="pcf.gz"
+
+BDEPEND="x11-apps/bdftopcf"

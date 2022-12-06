@@ -1,4 +1,3 @@
 =www-client/elinks-0.15.1-r1::gentoo ~amd64
 
-app-misc/tmux::dylex ~amd64
-x11-misc/dzen::dylex ~amd64
+*/*::dylex ~amd64
