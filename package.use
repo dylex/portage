@@ -1,3 +1,5 @@
 app-editors/vim cscope terminal
 dev-vcs/git -webdav
+media-libs/harfbuzz -graphite
 sys-boot/grub -fonts -themes
+x11-terms/xterm -unicode
