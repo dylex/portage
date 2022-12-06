@@ -1,1 +1,1 @@
-export MYMESONARGS="-Dformhist=false -Dexmode=true -Dno-root=true"
+MYMESONARGS="-Dformhist=false -Dexmode=true -Dno-root=true"
