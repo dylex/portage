@@ -1,5 +1,5 @@
---- mi/mieq.c	2022/07/12 13:27:57	1.1
-+++ mi/mieq.c	2022/10/28 00:11:10
+--- a/mi/mieq.c	2022/07/12 13:27:57	1.1
++++ b/mi/mieq.c	2022/10/28 00:11:10
 @@ -550,6 +550,7 @@
  
          master = (dev) ? GetMaster(dev, MASTER_ATTACHED) : NULL;
