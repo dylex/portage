@@ -1,0 +1,32 @@
+--- a/src/custom.h	2020/03/20 13:18:48	1.1
++++ b/src/custom.h	2020/10/15 19:55:14
+@@ -21,13 +21,13 @@
+ /*                                                                     */
+ /* The default values are initially set to Ottawa, Ontario, Canada.    */
+ /*---------------------------------------------------------------------*/
+-#define LAT_DEG 45
+-#define LAT_MIN 24
+-#define LAT_SEC  0
+-#define LON_DEG 75
+-#define LON_MIN 39
+-#define LON_SEC  0
+-#define LOCATION "Ottawa"
++#define LAT_DEG 40
++#define LAT_MIN 41
++#define LAT_SEC 16
++#define LON_DEG 73
++#define LON_MIN 58
++#define LON_SEC 18
++#define LOCATION "New York"
+ 
+ /*---------------------------------------------------------------------*/
+ /* DEFAULT_PAGE:  The default page size to use for Rem2PS.             */
+@@ -95,7 +95,7 @@
+ /* WANT_U_OPTION: Comment out the next define to permanently disable   */
+ /* the -u option.                                                      */
+ /*---------------------------------------------------------------------*/
+-#define WANT_U_OPTION 1
++//#define WANT_U_OPTION 1
+ 
+ /**********************************************************************/
+ /**********************************************************************/
