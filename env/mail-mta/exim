@@ -1,0 +1,7 @@
+post_src_configure() {
+	cat >> Makefile <<- EOC
+		ALT_CONFIG_PREFIX=${EPREFIX}/etc/exim
+		DISABLE_D_OPTION=yes
+		LOG_FILE_PATH=${EPREFIX}/var/log/exim/%s
+	EOC
+}
