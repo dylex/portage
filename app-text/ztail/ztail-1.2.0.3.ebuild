@@ -4,8 +4,7 @@ inherit haskell-cabal
 
 DESCRIPTION="Multi-file, colored, filtered log tailer"
 HOMEPAGE="https://dylex.net/src"
-SRC_URI="http://hackage.haskell.org/packages/archive/${PN}/${PV}/${P}.tar.gz
-	http://hackage.haskell.org/package/${PV}/${PN}.cabal"
+SRC_URI="https://hackage.haskell.org/package/${P}/${P}.tar.gz"
 
 LICENSE="BSD"
 SLOT="0"
