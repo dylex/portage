@@ -2,6 +2,6 @@ app-editors/vim cscope terminal
 app-shells/zsh -unicode
 dev-vcs/git -webdav
 mail-client/mutt -imap -sasl -smtp
-media-libs/harfbuzz -graphite
+media-libs/harfbuzz -graphite icu
 sys-boot/grub -fonts -themes
 x11-terms/xterm -unicode
