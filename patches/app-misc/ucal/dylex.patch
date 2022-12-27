@@ -1,0 +1,140 @@
+--- a/src/cal.c	2006-06-19 00:04:56.000000000 -0400
++++ b/src/cal.c	2006-06-19 00:30:56.000000000 -0400
+@@ -277,7 +277,7 @@
+     { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+     thisday, thismonth, thisyear, discard_old = 0, prog_pause = 0,
+     thismonth_only = 0, europe = 0, numfiles = 0, julian = 0,
+-    month3 = 0, year = 0, maxappts = 24, continu = 0;
++    month3 = 0, year = 0, maxappts = 24, continu = 0, small = 0;
+ 
+ char *months[] = { 
+      "",
+@@ -293,6 +293,8 @@
+      *line[MAXAPPTS],        /* line buffer for body of calendar           */
+      *buf = NULL;
+ 
++#define SMALLADJ (small ? 2 : 0)
++
+ void  addfilename(char *);
+ void  clearfilenames(void);
+ void  printmonth (short, short);
+@@ -327,6 +329,7 @@
+     { "today",      0 },
+     { "year",       0 },
+     { "continue",   0 },
++    { "small",      0 },
+ #ifdef USE_COLOR
+     { "use-color",  0 },
+     { "nocolor",    0 },
+@@ -409,12 +412,15 @@
+         continu = atoi(optarg);    /* display successive months */
+         if (continu > 0) maxappts = 8;
+         break;
+-#ifdef USE_COLOR
+     case 13:
+-        crt = 1; break;
++	small = 1; maxappts = 8; break;
++        break;
++#ifdef USE_COLOR
+     case 14:
+-        crt = 0; break;
++        crt = 1; break;
+     case 15:
++        crt = 0; break;
++    case 16:
+         color_file = optarg; break;
+ #endif /* USE_COLOR */
+     }
+@@ -701,7 +707,7 @@
+     thisyear = y = lt->tm_year + 1900;
+     thismonth = m = lt->tm_mon + 1;
+     thisday = lt->tm_mday;
+-    puts("");           /* first display a blank line */
++    if (!small) puts("");           /* first display a blank line */
+ 
+     switch (argc) {
+     case 1:             /* display current month if no arguments */
+@@ -935,7 +941,7 @@
+      * always be printed out (extra important for multi-column mode).
+      */
+     num_appts = max(8, num_appts);
+-    for (l = 0; l < num_appts; l++) {
++    for (l = SMALLADJ; l < num_appts; l++) {
+         if (columns == 1 || q == columns) {
+             index = LineWid-1;
+             ll = line[l];
+@@ -1249,14 +1255,14 @@
+     for (j = 0; j < maxentry; j++)              /* insert in sorted order */
+         if (dy < (day = atoi(&lln[j][1]))) {
+             k = maxentry;
+-            if (k == maxappts) --k;
++            if (k == maxappts-SMALLADJ) --k;
+             for (; k > j; k--)                  /* move everything up     */
+                 strcpy(lln[k], lln[k-1]);
+             break;
+         }
+         else if (day == 100) dy = dy-100;       /* reached new month      */
+ 
+-    if (j == maxappts) return NULL;
++    if (j == maxappts-SMALLADJ) return NULL;
+     return lln[j];
+ }
+ 
+@@ -1275,14 +1281,14 @@
+     char **lln = NULL, *ll;
+     char str[MAXLINE];
+ 
+-    if ((lln = (char **)calloc(maxappts+1, sizeof(char *)))==NULL)
++    if ((lln = (char **)calloc(maxappts-SMALLADJ+1, sizeof(char *)))==NULL)
+         goto spcldone;
+ 
+     if (m != thismonth) discard_old = 0;
+     /* Special day descriptions are copied directly into line
+      * buffer, at an offset of MonthWid.
+      */
+-    for (j = 0; j < maxappts; j++) lln[j] = &line[j][MonthWid-1];
++    for (j = 0; j < maxappts-SMALLADJ; j++) lln[j] = &line[j+SMALLADJ][MonthWid-1];
+ 
+     strcpy(lln[0], " 100");             /* last (hiappt) entry */
+ 
+@@ -1459,7 +1465,7 @@
+  * End of anniversary changes
+  *=========================================================================*/
+ 
+-            if (++hiappt > maxappts) hiappt = maxappts;
++            if (++hiappt > maxappts-SMALLADJ) hiappt = maxappts-SMALLADJ;
+             if (--weeklyflag > 0) goto weeklyduplicate; /* dup. wkly reminders */
+             if (periodflag > 0) goto periodduplicate; /* dup. periodic reminders */
+         }
+@@ -1526,12 +1532,12 @@
+     static char tempstr[MAXLINE];   /* big enough for a long reminder line */
+ 
+     if (!data_file) return 0;   /* don't read any data files */
+-    if ((lln = (char **)calloc(maxappts+1, sizeof(char *)))==NULL) return 1;
++    if ((lln = (char **)calloc(maxappts-SMALLADJ+1, sizeof(char *)))==NULL) return 1;
+ 
+     /* Special day descriptions are copied directly into line
+      * buffer, at an offset of MonthWid.
+      */
+-    for (j = 0; j < maxappts; j++) lln[j] = &line[j][MonthWid-1];
++    for (j = 0; j < maxappts-SMALLADJ; j++) lln[j] = &line[j+SMALLADJ][MonthWid-1];
+ 
+     strcpy(lln[0], " 100");     /* last entry */
+ 
+@@ -1640,7 +1646,7 @@
+                 descrip[DAY_DESC-5] = '\0';     /* truncate description */
+                 strcpy(&ll[4], descrip);
+ 
+-                if (++hiappt > maxappts) hiappt = maxappts;
++                if (++hiappt > maxappts-SMALLADJ) hiappt = maxappts-SMALLADJ;
+             } while (--weeklyflag > 0); /* dup. weekly reminders */
+         }
+         fclose(fp);
+@@ -1755,6 +1761,7 @@
+   --m[onday]          Display Monday as first day of week (same as --europe)\n\
+   --nod[ata]          Ignore appointment descriptions file\n\
+   --p[ause]           Pause for keystroke before exiting\n\
++  --s[mall]           Show a reduced (6-line) version\n\
+   --th[ismonth]       Show only current month appointments\n\
+   --to[day]           Show only today's appointments on current month\n\
+   --y[ear]            Display a calendar for the current year\n", stderr);
