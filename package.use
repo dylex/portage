@@ -3,5 +3,6 @@ app-shells/zsh -unicode
 dev-vcs/git -webdav
 mail-client/mutt -imap -sasl -smtp
 media-libs/harfbuzz -graphite icu
+media-gfx/feh curl exif
 sys-boot/grub -fonts -themes
 x11-terms/xterm -unicode

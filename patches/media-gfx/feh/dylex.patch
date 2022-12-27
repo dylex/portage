@@ -1,0 +1,30 @@
+diff --git a/src/keyevents.c b/src/keyevents.c
+index 4d6759a..e38a99c 100644
+--- a/src/keyevents.c
++++ b/src/keyevents.c
+@@ -608,10 +608,8 @@ void feh_event_handle_generic(winwidget winwid, unsigned int state, KeySym keysy
+ 		if (winwid->zoom > ZOOM_MAX)
+ 			winwid->zoom = ZOOM_MAX;
+ 
+-		winwid->im_x = (winwid->w / 2) - (((winwid->w / 2) - winwid->im_x) /
+-			winwid->old_zoom * winwid->zoom);
+-		winwid->im_y = (winwid->h / 2) - (((winwid->h / 2) - winwid->im_y) /
+-			winwid->old_zoom * winwid->zoom);
++		winwid->im_x = opt.zoom_rate*winwid->im_x + (1-opt.zoom_rate)*winwid->w/2;
++		winwid->im_y = opt.zoom_rate*winwid->im_y + (1-opt.zoom_rate)*winwid->h/2;
+ 		winwidget_sanitise_offsets(winwid);
+ 		winwidget_render_image(winwid, 0, 0);
+ 	}
+@@ -622,10 +620,8 @@ void feh_event_handle_generic(winwidget winwid, unsigned int state, KeySym keysy
+ 		if (winwid->zoom < ZOOM_MIN)
+ 			winwid->zoom = ZOOM_MIN;
+ 
+-		winwid->im_x = (winwid->w / 2) - (((winwid->w / 2) - winwid->im_x) /
+-			winwid->old_zoom * winwid->zoom);
+-		winwid->im_y = (winwid->h / 2) - (((winwid->h / 2) - winwid->im_y) /
+-			winwid->old_zoom * winwid->zoom);
++		winwid->im_x = winwid->im_x/opt.zoom_rate + (1-1/opt.zoom_rate)*winwid->w/2;
++		winwid->im_y = winwid->im_y/opt.zoom_rate + (1-1/opt.zoom_rate)*winwid->h/2;
+ 		winwidget_sanitise_offsets(winwid);
+ 		winwidget_render_image(winwid, 0, 0);
+ 	}
