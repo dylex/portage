@@ -1,0 +1,129 @@
+diff -ru orpie-release-1.6.1/src/orpie/interface_main.ml orpie-release-1.6.1-new/src/orpie/interface_main.ml
+--- orpie-release-1.6.1/src/orpie/interface_main.ml	2020-03-14 19:51:12.000000000 -0400
++++ orpie-release-1.6.1-new/src/orpie/interface_main.ml	2022-12-29 18:39:42.902671508 -0500
+@@ -1515,6 +1515,12 @@
+       handle_function_call iface iface.calc#unit_value
+    |Trace ->
+       handle_function_call iface iface.calc#trace
++   |And ->
++      handle_function_call iface iface.calc#logical_and
++   |Or ->
++      handle_function_call iface iface.calc#logical_or
++   |Xor ->
++      handle_function_call iface iface.calc#logical_xor
+    end
+ 
+ 
+Only in orpie-release-1.6.1-new/src/orpie: interface_main.ml.orig
+diff -ru orpie-release-1.6.1/src/orpie/operations.ml orpie-release-1.6.1-new/src/orpie/operations.ml
+--- orpie-release-1.6.1/src/orpie/operations.ml	2020-03-14 19:51:12.000000000 -0400
++++ orpie-release-1.6.1-new/src/orpie/operations.ml	2022-12-29 18:39:48.812690360 -0500
+@@ -34,7 +34,7 @@
+                             | Total | Mean | Sumsq | Var |VarBias
+                             | Stdev | StdevBias | Min | Max 
+                             | Utpn | StandardizeUnits | ConvertUnits
+-                            | UnitValue | Trace;;
++                            | UnitValue | Trace | And | Or | Xor ;;
+ 
+ type command_operation_t  = | Drop | Clear | Swap | Dup | Undo
+                             | BeginBrowse | BeginAbbrev | BeginVar | Quit
+Only in orpie-release-1.6.1-new/src/orpie: operations.ml.orig
+diff -ru orpie-release-1.6.1/src/orpie/rcfile.ml orpie-release-1.6.1-new/src/orpie/rcfile.ml
+--- orpie-release-1.6.1/src/orpie/rcfile.ml	2022-12-29 18:38:49.172500152 -0500
++++ orpie-release-1.6.1-new/src/orpie/rcfile.ml	2022-12-29 18:39:53.012703754 -0500
+@@ -500,6 +500,9 @@
+    |"function_convert_units"        -> (Function ConvertUnits)
+    |"function_unit_value"           -> (Function UnitValue)
+    |"function_trace"                -> (Function Trace)
++   |"function_and"		    -> (Function And)
++   |"function_or"		    -> (Function Or)
++   |"function_xor"		    -> (Function Xor)
+    |"edit_begin_integer"            -> (Edit BeginInteger)
+    |"edit_complex"                  -> (Edit BeginComplex)
+    |"edit_matrix"                   -> (Edit BeginMatrix)
+Only in orpie-release-1.6.1-new/src/orpie: rcfile.ml.orig
+diff -ru orpie-release-1.6.1/src/orpie/rpc_calc.ml orpie-release-1.6.1-new/src/orpie/rpc_calc.ml
+--- orpie-release-1.6.1/src/orpie/rpc_calc.ml	2020-03-14 19:51:12.000000000 -0400
++++ orpie-release-1.6.1-new/src/orpie/rpc_calc.ml	2022-12-29 18:39:58.646055057 -0500
+@@ -2549,7 +2549,80 @@
+             stack#push gen_el;
+             raise_invalid "argument of trace must be a square matrix"
+ 
++      
++      method logical_and () = self#check_args 2 "and" (self#internal_logical_binop self#internal_and)
+ 
++      method private internal_and n1 n2 =
++	let l1 = Nat.length_nat n1 in
++	let l2 = Nat.length_nat n2 in
++	let l = min l1 l2 in
++	let n = Nat.create_nat l in
++	Nat.blit_nat n 0 n1 0 l;
++	for i = 0 to pred l do
++	  Nat.land_digit_nat n i n2 i
++	done;
++	n
++
++      method logical_or () = self#check_args 2 "or" (self#internal_logical_binop self#internal_or)
++
++      method private internal_or n1 n2 =
++	let l1 = Nat.length_nat n1 in
++	let l2 = Nat.length_nat n2 in
++	let l = max l1 l2 in
++	let n = Nat.create_nat l in
++	Nat.blit_nat n 0 n1 0 l1;
++	Nat.set_to_zero_nat n l1 (l - l1);
++	for i = 0 to pred l2 do
++	  Nat.lor_digit_nat n i n2 i
++	done;
++	n
++
++      method logical_xor () = self#check_args 2 "xor" (self#internal_logical_binop self#internal_xor)
++
++      method private internal_xor n1 n2 =
++	let l1 = Nat.length_nat n1 in
++	let l2 = Nat.length_nat n2 in
++	let l = max l1 l2 in
++	let n = Nat.create_nat l in
++	Nat.blit_nat n 0 n1 0 l1;
++	Nat.set_to_zero_nat n l1 (l - l1);
++	for i = 0 to pred l2 do
++	  Nat.lxor_digit_nat n i n2 i
++	done;
++	n
++
++      method private nat_of_gen gen_el =
++	match gen_el with
++	  | RpcInt el when sign_big_int el >= 0 ->
++	      nat_of_big_int el
++	  | _ ->
++	      raise_invalid "logical operations require positive integer arguments"
++
++      method private internal_logical_binop f () =
++        self#evaln 1;
++	let gen_el2 = stack#pop () in
++	let gen_el1 = stack#pop () in
++	let n1, n2 = try
++	    self#nat_of_gen gen_el1, self#nat_of_gen gen_el2
++	  with
++	    Invalid_argument msg ->
++	      stack#push gen_el1;
++	      stack#push gen_el2;
++	      raise_invalid msg in
++	stack#push (RpcInt (big_int_of_nat (f n1 n2)))
++
++
++      method logical_not () = self#check_args 1 "not" self#internal_logical_not
++
++      method private internal_logical_not () =
++	self#evaln 1;
++	let gen_el = stack#pop () in
++	match gen_el with
++	    RpcInt el ->
++	      stack#push (RpcInt (sub_big_int (big_int_of_int ~-1) el))
++	  | _ ->
++	      (stack#push gen_el;
++	      raise_invalid "logical not requires an integer argument")
+ 
+ 
+ (*      method print_stack () =
+Only in orpie-release-1.6.1-new/src/orpie: rpc_calc.ml.orig

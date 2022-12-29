@@ -1,0 +1,121 @@
+--- a/interface_main.ml	2008-01-06 22:46:20.000000000 -0500
++++ b/interface_main.ml	2008-01-06 22:45:25.000000000 -0500
+@@ -1514,6 +1514,12 @@
+       handle_function_call iface iface.calc#unit_value
+    |Trace ->
+       handle_function_call iface iface.calc#trace
++   |And ->
++      handle_function_call iface iface.calc#logical_and
++   |Or ->
++      handle_function_call iface iface.calc#logical_or
++   |Xor ->
++      handle_function_call iface iface.calc#logical_xor
+    end
+ 
+ 
+--- a/operations.ml	2008-01-06 22:46:11.000000000 -0500
++++ b/operations.ml	2008-01-06 22:44:51.000000000 -0500
+@@ -35,7 +35,7 @@
+                             | Total | Mean | Sumsq | Var |VarBias
+                             | Stdev | StdevBias | Min | Max 
+                             | Utpn | StandardizeUnits | ConvertUnits
+-                            | UnitValue | Trace;;
++                            | UnitValue | Trace | And | Or | Xor ;;
+ 
+ type command_operation_t  = | Drop | Clear | Swap | Dup | Undo
+                             | BeginBrowse | BeginAbbrev | BeginVar | Quit
+--- a/rcfile.ml	2008-01-06 22:46:38.000000000 -0500
++++ b/rcfile.ml	2008-01-06 22:46:56.000000000 -0500
+@@ -501,6 +501,9 @@
+    |"function_convert_units"        -> (Function ConvertUnits)
+    |"function_unit_value"           -> (Function UnitValue)
+    |"function_trace"                -> (Function Trace)
++   |"function_and"		    -> (Function And)
++   |"function_or"		    -> (Function Or)
++   |"function_xor"		    -> (Function Xor)
+    |"edit_begin_integer"            -> (Edit BeginInteger)
+    |"edit_complex"                  -> (Edit BeginComplex)
+    |"edit_matrix"                   -> (Edit BeginMatrix)
+--- a/rpc_calc.ml	2008-01-06 22:47:11.000000000 -0500
++++ b/rpc_calc.ml	2008-01-06 22:48:44.000000000 -0500
+@@ -2521,7 +2521,80 @@
+             stack#push gen_el;
+             raise_invalid "argument of trace must be a square matrix"
+ 
++      
++      method logical_and () = self#check_args 2 "and" (self#internal_logical_binop self#internal_and)
+ 
++      method private internal_and n1 n2 =
++	let l1 = Nat.length_nat n1 in
++	let l2 = Nat.length_nat n2 in
++	let l = min l1 l2 in
++	let n = Nat.create_nat l in
++	Nat.blit_nat n 0 n1 0 l;
++	for i = 0 to pred l do
++	  Nat.land_digit_nat n i n2 i
++	done;
++	n
++
++      method logical_or () = self#check_args 2 "or" (self#internal_logical_binop self#internal_or)
++
++      method private internal_or n1 n2 =
++	let l1 = Nat.length_nat n1 in
++	let l2 = Nat.length_nat n2 in
++	let l = max l1 l2 in
++	let n = Nat.create_nat l in
++	Nat.blit_nat n 0 n1 0 l1;
++	Nat.set_to_zero_nat n l1 (l - l1);
++	for i = 0 to pred l2 do
++	  Nat.lor_digit_nat n i n2 i
++	done;
++	n
++
++      method logical_xor () = self#check_args 2 "xor" (self#internal_logical_binop self#internal_xor)
++
++      method private internal_xor n1 n2 =
++	let l1 = Nat.length_nat n1 in
++	let l2 = Nat.length_nat n2 in
++	let l = max l1 l2 in
++	let n = Nat.create_nat l in
++	Nat.blit_nat n 0 n1 0 l1;
++	Nat.set_to_zero_nat n l1 (l - l1);
++	for i = 0 to pred l2 do
++	  Nat.lxor_digit_nat n i n2 i
++	done;
++	n
++
++      method private nat_of_gen gen_el =
++	match gen_el with
++	  | RpcInt el when sign_big_int el >= 0 ->
++	      nat_of_big_int el
++	  | _ ->
++	      raise_invalid "logical operations require positive integer arguments"
++
++      method private internal_logical_binop f () =
++        self#evaln 1;
++	let gen_el2 = stack#pop () in
++	let gen_el1 = stack#pop () in
++	let n1, n2 = try
++	    self#nat_of_gen gen_el1, self#nat_of_gen gen_el2
++	  with
++	    Invalid_argument msg ->
++	      stack#push gen_el1;
++	      stack#push gen_el2;
++	      raise_invalid msg in
++	stack#push (RpcInt (big_int_of_nat (f n1 n2)))
++
++
++      method logical_not () = self#check_args 1 "not" self#internal_logical_not
++
++      method private internal_logical_not () =
++	self#evaln 1;
++	let gen_el = stack#pop () in
++	match gen_el with
++	    RpcInt el ->
++	      stack#push (RpcInt (sub_big_int (big_int_of_int ~-1) el))
++	  | _ ->
++	      (stack#push gen_el;
++	      raise_invalid "logical not requires an integer argument")
+ 
+ 
+ (*      method print_stack () =
