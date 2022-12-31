@@ -1,11 +1,10 @@
-EAPI=6
+EAPI=7
 
-inherit git-r3
+inherit git-r3 autotools
 
 DESCRIPTION="GNU/Linux application to control backlights"
 EGIT_REPO_URI="https://github.com/haikarainen/${PN}.git"
-HOMEPAGE="https://github.com/haikarainen/{PN}"
-SRC_URI=""
+HOMEPAGE="https://github.com/haikarainen/light"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -14,10 +13,7 @@ IUSE=""
 
 DEPEND="sys-apps/help2man"
 
-src_compile() {
-	emake CC=$(tc-getCC) CFLAGS="${CFLAGS} -Iinclude"
-}
-
-src_install() {
-	emake install PREFIX="${D}${EPREFIX}/usr" DESTDIR="${D}"
+src_prepare() {
+	default
+	eautoreconf
 }
