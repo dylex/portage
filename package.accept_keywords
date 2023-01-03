@@ -1,5 +1,7 @@
 dev-ml/curses::gentoo ~amd64
 dev-ml/gsl-ocaml::gentoo ~amd64
+=dev-perl/DateTime-Event-ICal-0.130.0-r1::gentoo ~amd64
+=dev-perl/DateTime-Format-ICal-0.90.0-r1::gentoo ~amd64
 sci-calculators/orpie::gentoo ~amd64
 =www-client/elinks-0.15.1-r1::gentoo ~amd64
 x11-misc/gbdfed::gentoo ~amd64
