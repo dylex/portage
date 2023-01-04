@@ -1,0 +1,47 @@
+From 3ebb042486010a14e5603063b29caf91a6f16524 Mon Sep 17 00:00:00 2001
+From: Dylan Simon <dylan@dylex.net>
+Date: Sat, 7 Jan 2012 12:50:31 -0500
+Subject: [PATCH] Revert "ALSA: emu10k1: allow to disable the SRC"
+
+This reverts commit 57e5c63007955838043e34c732d224b2cbbb128f.
+
+This doesn't seem to make any sense, and may be breaking some software that expects that the emu10k1 can be opened at other rates
+
+Conflicts:
+	sound/pci/emu10k1/emupcm.c
+---
+ sound/pci/emu10k1/emupcm.c | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/sound/pci/emu10k1/emupcm.c b/sound/pci/emu10k1/emupcm.c
+index 48af77ae8020..c7f76e601b58 100644
+--- a/sound/pci/emu10k1/emupcm.c
++++ b/sound/pci/emu10k1/emupcm.c
+@@ -1115,7 +1115,7 @@ static int snd_emu10k1_playback_open(struct snd_pcm_substream *substream)
+ 	struct snd_emu10k1_pcm *epcm;
+ 	struct snd_emu10k1_pcm_mixer *mix;
+ 	struct snd_pcm_runtime *runtime = substream->runtime;
+-	int i, err, sample_rate;
++	int i, err;
+ 
+ 	epcm = kzalloc(sizeof(*epcm), GFP_KERNEL);
+ 	if (epcm == NULL)
+@@ -1136,15 +1136,6 @@ static int snd_emu10k1_playback_open(struct snd_pcm_substream *substream)
+ 		kfree(epcm);
+ 		return err;
+ 	}
+-	if (emu->card_capabilities->emu_model && emu->emu1010.internal_clock == 0)
+-		sample_rate = 44100;
+-	else
+-		sample_rate = 48000;
+-	err = snd_pcm_hw_rule_noresample(runtime, sample_rate);
+-	if (err < 0) {
+-		kfree(epcm);
+-		return err;
+-	}
+ 	mix = &emu->pcm_mixer[substream->number];
+ 	for (i = 0; i < 4; i++)
+ 		mix->send_routing[0][i] = mix->send_routing[1][i] = mix->send_routing[2][i] = i;
+-- 
+2.38.2
+
