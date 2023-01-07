@@ -1,5 +1,6 @@
 app-editors/vim cscope terminal
 app-shells/zsh -unicode
+app-text/mupdf -javascript
 dev-vcs/git -webdav
 mail-client/mutt -imap -sasl -smtp
 media-libs/harfbuzz -graphite icu
