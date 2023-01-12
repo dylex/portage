@@ -1,0 +1,13 @@
+diff --git a/options/options.c b/options/options.c
+index 2f8885e0ba..fd20cf5732 100644
+--- a/options/options.c
++++ b/options/options.c
+@@ -551,7 +551,7 @@ static const m_option_t mp_opts[] = {
+         M_RANGE(0, 16*48000)},
+     {"audio-channels", OPT_CHANNELS(audio_output_channels), .flags = UPDATE_AUDIO},
+     {"audio-format", OPT_AUDIOFORMAT(audio_output_format), .flags = UPDATE_AUDIO},
+-    {"speed", OPT_DOUBLE(playback_speed), M_RANGE(0.01, 100.0)},
++    {"speed", OPT_DOUBLE(playback_speed), M_RANGE(0.001, 1000.0)},
+ 
+     {"audio-pitch-correction", OPT_FLAG(pitch_correction)},
+ 
