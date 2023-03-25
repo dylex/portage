@@ -1,9 +1,6 @@
-EAPI=5
+EAPI=7
 
 inherit git-r3
-
-MY_PV="${PV##*.}"
-MY_P="${PN}-${MY_PV}"
 
 DESCRIPTION="The (ex-)gnome-utils stripchart plotting utility"
 HOMEPAGE="http://github.com/dylex/stripchart"
@@ -16,8 +13,6 @@ IUSE=""
 
 DEPEND="x11-libs/gtk+:2 dev-libs/libxml2"
 RDEPEND="${DEPEND}"
-
-S="${WORKDIR}/${MY_P}"
 
 src_install() {
 	dobin stripchart || die
