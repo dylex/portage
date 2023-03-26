@@ -3,7 +3,8 @@ app-shells/zsh -unicode
 app-text/mupdf -javascript
 dev-vcs/git -webdav
 mail-client/mutt -imap -sasl -smtp
-media-libs/harfbuzz -graphite icu
 media-gfx/feh curl exif
+media-libs/harfbuzz -graphite icu
+net-libs/webkit-gtk -pdf
 sys-boot/grub -fonts -themes
 x11-terms/xterm -unicode
