@@ -1,0 +1,50 @@
+commit 32d2ffec4ad61429048f5439372c24c863f15131
+Author: Dylan Simon <dylan@dylex.net>
+Date:   Fri Apr 21 22:16:34 2023
+
+    add --sd-lavc-o to parallel --[av]d-lavc-opts
+
+diff --git a/options/options.c b/options/options.c
+index 739dee4dcf..3905af7b41 100644
+--- a/options/options.c
++++ b/options/options.c
+@@ -71,6 +71,7 @@ extern const struct m_sub_options demux_mkv_conf;
+ extern const struct m_sub_options demux_cue_conf;
+ extern const struct m_sub_options vd_lavc_conf;
+ extern const struct m_sub_options ad_lavc_conf;
++extern const struct m_sub_options sub_lavc_conf;
+ extern const struct m_sub_options input_config;
+ extern const struct m_sub_options encode_config;
+ extern const struct m_sub_options ra_ctx_conf;
+@@ -292,6 +293,7 @@ const struct m_sub_options mp_subtitle_sub_opts = {
+         {"sub-clear-on-seek", OPT_FLAG(sub_clear_on_seek)},
+         {"teletext-page", OPT_INT(teletext_page), M_RANGE(1, 999)},
+         {"sub-past-video-end", OPT_FLAG(sub_past_video_end)},
++	{"sd-lavc-o", OPT_KEYVALUELIST(sd_lavc_opts)},
+         {0}
+     },
+     .size = sizeof(OPT_BASE_STRUCT),
+diff --git a/options/options.h b/options/options.h
+index 0e24cd53e5..dc238c0a87 100644
+--- a/options/options.h
++++ b/options/options.h
+@@ -110,6 +110,7 @@ struct mp_subtitle_opts {
+     int sub_clear_on_seek;
+     int teletext_page;
+     int sub_past_video_end;
++    char **sd_lavc_opts;
+ };
+ 
+ struct mp_sub_filter_opts {
+diff --git a/sub/sd_lavc.c b/sub/sd_lavc.c
+index ce0ef11a0a..c681b7be70 100644
+--- a/sub/sd_lavc.c
++++ b/sub/sd_lavc.c
+@@ -100,6 +100,7 @@ static int init(struct sd *sd)
+     mp_lavc_set_extradata(ctx, sd->codec->extradata, sd->codec->extradata_size);
+     priv->pkt_timebase = mp_get_codec_timebase(sd->codec);
+     ctx->pkt_timebase = priv->pkt_timebase;
++    mp_set_avopts(sd->log, ctx, sd->opts->sd_lavc_opts);
+     if (avcodec_open2(ctx, sub_codec, NULL) < 0)
+         goto error;
+     priv->avctx = ctx;
