@@ -1,0 +1,77 @@
+commit 98c6b53da26d526d218ac3b0c4143346ba7adb9d
+Author: Dylan Simon <dylan@dylex.net>
+Date:   Sat Apr 29 22:49:47 2023
+
+    add flac --not-cdda option to force !is_cdda
+
+diff --git a/src/flac/encode.c b/src/flac/encode.c
+index 5c03ec60..55ab5312 100644
+--- a/src/flac/encode.c
++++ b/src/flac/encode.c
+@@ -1717,7 +1717,7 @@ FLAC__bool EncoderSession_init_encoder(EncoderSession *e, encode_options_t optio
+ 	static_metadata_t static_metadata;
+ 	uint32_t num_metadata = 0, ic;
+ 	FLAC__StreamEncoderInitStatus init_status;
+-	const FLAC__bool is_cdda = (channels == 1 || channels == 2) && (bps == 16) && (sample_rate == 44100);
++	const FLAC__bool is_cdda = !options.not_cdda && (channels == 1 || channels == 2) && (bps == 16) && (sample_rate == 44100);
+ 	char apodizations[2000];
+ 
+ 	FLAC__ASSERT(sizeof(options.pictures)/sizeof(options.pictures[0]) <= 64);
+diff --git a/src/flac/encode.h b/src/flac/encode.h
+index 5cb2cb78..8e5ab3bb 100644
+--- a/src/flac/encode.h
++++ b/src/flac/encode.h
+@@ -71,6 +71,7 @@ typedef struct {
+ 	char *requested_seek_points;
+ 	int num_requested_seek_points;
+ 	const char *cuesheet_filename;
++	FLAC__bool not_cdda;
+ 	FLAC__bool treat_warnings_as_errors;
+ 	FLAC__bool continue_through_decode_errors; /* currently only obeyed when encoding from FLAC or Ogg FLAC */
+ 	FLAC__bool cued_seekpoints;
+diff --git a/src/flac/main.c b/src/flac/main.c
+index 2bc30355..2425432c 100644
+--- a/src/flac/main.c
++++ b/src/flac/main.c
+@@ -123,6 +123,7 @@ static struct share__option long_options_[] = {
+ 	 * encoding options
+ 	 */
+ 	{ "cuesheet"                  , share__required_argument, 0, 0 },
++	{ "not-cdda"                  , share__no_argument, 0, 0 },
+ 	{ "no-cued-seekpoints"        , share__no_argument, 0, 0 },
+ 	{ "picture"                   , share__required_argument, 0, 0 },
+ 	{ "tag"                       , share__required_argument, 0, 'T' },
+@@ -277,6 +278,7 @@ static struct {
+ 	char requested_seek_points[5000]; /* bad MAGIC NUMBER but buffer overflow is checked */
+ 	int num_requested_seek_points; /* -1 => no -S options were given, 0 => -S- was given */
+ 	const char *cuesheet_filename;
++	FLAC__bool not_cdda;
+ 	FLAC__bool cued_seekpoints;
+ 	FLAC__bool channel_map_none; /* --channel-map=none specified, eventually will expand to take actual channel map */
+ 	FLAC__bool error_on_compression_fail;
+@@ -627,6 +629,7 @@ FLAC__bool init_options(void)
+ 	option_values.requested_seek_points[0] = '\0';
+ 	option_values.num_requested_seek_points = -1;
+ 	option_values.cuesheet_filename = 0;
++	option_values.not_cdda = false;
+ 	option_values.cued_seekpoints = true;
+ 	option_values.channel_map_none = false;
+ 	option_values.error_on_compression_fail = false;
+@@ -774,6 +777,9 @@ int parse_option(int short_option, const char *long_option, const char *option_a
+ 			FLAC__ASSERT(0 != option_argument);
+ 			option_values.cuesheet_filename = option_argument;
+ 		}
++		else if(0 == strcmp(long_option, "not-cdda")) {
++			option_values.not_cdda = true;
++		}
+ 		else if(0 == strcmp(long_option, "picture")) {
+ 			const uint32_t max_pictures = sizeof(option_values.pictures)/sizeof(option_values.pictures[0]);
+ 			FLAC__ASSERT(0 != option_argument);
+@@ -2031,6 +2037,7 @@ int encode_file(const char *infilename, FLAC__bool is_first_file, FLAC__bool is_
+ 	encode_options.requested_seek_points = option_values.requested_seek_points;
+ 	encode_options.num_requested_seek_points = option_values.num_requested_seek_points;
+ 	encode_options.cuesheet_filename = option_values.cuesheet_filename;
++	encode_options.not_cdda = option_values.not_cdda;
+ 	encode_options.continue_through_decode_errors = option_values.continue_through_decode_errors;
+ 	encode_options.cued_seekpoints = option_values.cued_seekpoints;
+ 	encode_options.channel_map_none = option_values.channel_map_none;
