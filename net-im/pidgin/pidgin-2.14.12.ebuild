@@ -1,27 +1,26 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 GENTOO_DEPEND_ON_PERL=no
-PYTHON_COMPAT=( python3_{8..9} )
+PYTHON_COMPAT=( python3_{9..11} )
 
-inherit autotools gnome2-utils flag-o-matic toolchain-funcs multilib perl-module python-single-r1 xdg
+inherit autotools gnome2-utils flag-o-matic perl-module python-single-r1 xdg
 
 DESCRIPTION="GTK Instant Messenger client"
 HOMEPAGE="https://pidgin.im/"
-SRC_URI="
-	mirror://sourceforge/${PN}/${P}.tar.bz2
-	https://gist.githubusercontent.com/imcleod/77f38d11af11b2413ada/raw/46e9d6cb4d2f839832dad2d697bb141a88028e04/pidgin-irc-join-sleep.patch -> ${PN}-2.10.9-irc_join_sleep.patch"
+SRC_URI="mirror://sourceforge/${PN}/${P}.tar.bz2"
 
 LICENSE="GPL-2"
 SLOT="0/2" # libpurple version
-KEYWORDS="~alpha amd64 arm arm64 ~ia64 ~ppc ~ppc64 ~riscv sparc x86 ~amd64-linux ~x86-linux"
+KEYWORDS="~alpha amd64 arm arm64 ~ia64 ~loong ppc ppc64 ~riscv sparc x86 ~amd64-linux ~x86-linux"
 IUSE="aqua dbus debug doc eds gadu gnutls groupwise +gstreamer +gtk idn
 meanwhile ncurses networkmanager nls perl pie prediction python sasl spell tcl
-tk +xscreensaver zephyr zeroconf"
+test tk v4l +xscreensaver zephyr zeroconf"
 IUSE+=" X"
 IUSE+=" +irc +jabber +oscar +yahoo +simple +msn +myspace"
+RESTRICT="!test? ( test )"
 
 # dbus requires python to generate C code for dbus bindings (thus DEPEND only).
 # finch uses libgnt that links with libpython - {R,}DEPEND. But still there is
@@ -32,11 +31,23 @@ IUSE+=" +irc +jabber +oscar +yahoo +simple +msn +myspace"
 RDEPEND="
 	>=dev-libs/glib-2.16
 	>=dev-libs/libxml2-2.6.18
-	ncurses? (
-		>=dev-libs/libgnt-$(ver_cut 1-2)
-		sys-libs/ncurses:=[unicode(+)]
-		dbus? ( ${PYTHON_DEPS} )
-		python? ( ${PYTHON_DEPS} )
+	dbus? (
+		>=dev-libs/dbus-glib-0.71
+		>=sys-apps/dbus-0.90
+		$(python_gen_cond_dep '
+			dev-python/dbus-python[${PYTHON_USEDEP}]
+		')
+	)
+	gadu? ( >=net-libs/libgadu-1.11.0 )
+	gnutls? ( net-libs/gnutls:= )
+	!gnutls? (
+		dev-libs/nspr
+		dev-libs/nss
+	)
+	gstreamer? (
+		media-libs/gstreamer:1.0
+		media-libs/gst-plugins-base:1.0
+		>=net-libs/farstream-0.2.7:0.2
 	)
 	gtk? (
 		>=x11-libs/gtk+-2.10:2[aqua=]
@@ -47,38 +58,30 @@ RDEPEND="
 		eds? ( >=gnome-extra/evolution-data-server-3.6:= )
 		prediction? ( >=dev-db/sqlite-3.3:3 )
 	)
-	gstreamer? (
-		media-libs/gstreamer:1.0
-		media-libs/gst-plugins-base:1.0
-		>=net-libs/farstream-0.2.7:0.2
-	)
-	zeroconf? ( net-dns/avahi[dbus] )
-	dbus? (
-		>=dev-libs/dbus-glib-0.71
-		>=sys-apps/dbus-0.90
-		$(python_gen_cond_dep '
-			dev-python/dbus-python[${PYTHON_USEDEP}]
-		')
-	)
-	perl? ( >=dev-lang/perl-5.16:= )
-	gadu? ( >=net-libs/libgadu-1.11.0 )
-	gnutls? ( net-libs/gnutls:= )
-	!gnutls? (
-		dev-libs/nspr
-		dev-libs/nss
-	)
+	idn? ( net-dns/libidn:= )
 	meanwhile? ( net-libs/meanwhile )
+	ncurses? (
+		>=dev-libs/libgnt-$(ver_cut 1-2)
+		sys-libs/ncurses:=[unicode(+)]
+		dbus? ( ${PYTHON_DEPS} )
+		python? ( ${PYTHON_DEPS} )
+	)
+	networkmanager? ( net-misc/networkmanager )
+	perl? ( >=dev-lang/perl-5.16:= )
+	sasl? ( dev-libs/cyrus-sasl:2 )
 	tcl? ( dev-lang/tcl:0= )
 	tk? ( dev-lang/tk:0= )
-	sasl? ( dev-libs/cyrus-sasl:2 )
-	networkmanager? ( net-misc/networkmanager )
-	idn? ( net-dns/libidn:= )
+	v4l? ( media-plugins/gst-plugins-v4l2 )
+	zeroconf? ( net-dns/avahi[dbus] )
 "
 
 # We want nls in case gtk is enabled, bug #
-NLS_DEPEND=">=dev-util/intltool-0.41.1 sys-devel/gettext"
-
-DEPEND="${RDEPEND}
+NLS_DEPEND="
+	>=dev-util/intltool-0.41.1
+	sys-devel/gettext
+"
+DEPEND="
+	${RDEPEND}
 	gtk? (
 		x11-base/xorg-proto
 		${NLS_DEPEND}
@@ -91,6 +94,7 @@ BDEPEND="
 	virtual/pkgconfig
 	doc? ( app-doc/doxygen )
 	!gtk? ( nls? ( ${NLS_DEPEND} ) )
+	test? ( >=dev-libs/check-0.9.4 )
 "
 
 DOCS=( AUTHORS HACKING NEWS README ChangeLog )
@@ -99,6 +103,7 @@ REQUIRED_USE="
 	dbus? ( ${PYTHON_REQUIRED_USE} )
 	networkmanager? ( dbus )
 	python? ( ${PYTHON_REQUIRED_USE} )
+	v4l? ( gstreamer )
 "
 
 # Enable Default protocols
@@ -134,10 +139,6 @@ DYNAMIC_PRPLS=""
 #	x11-plugins/pidgin-sendscreenshot
 #	x11-plugins/pidgimpd
 
-PATCHES=(
-	"${DISTDIR}/${PN}-2.10.9-irc_join_sleep.patch" # 577286
-)
-
 pkg_pretend() {
 	if ! use gtk && ! use ncurses ; then
 		elog "You did not pick the ncurses or gtk use flags, only libpurple"
@@ -161,7 +162,8 @@ pkg_setup() {
 }
 
 src_prepare() {
-	xdg_src_prepare
+	xdg_environment_reset
+	default
 	eautoreconf
 }
 
@@ -177,49 +179,52 @@ src_configure() {
 	use simple && DYNAMIC_PRPLS+=",simple"
 	use msn && DYNAMIC_PRPLS+=",msn"
 	use myspace && DYNAMIC_PRPLS+=",myspace"
-	use gadu 	&& DYNAMIC_PRPLS+=",gg"
-	use groupwise 	&& DYNAMIC_PRPLS+=",novell"
-	use meanwhile 	&& DYNAMIC_PRPLS+=",sametime"
-	use zephyr 	&& DYNAMIC_PRPLS+=",zephyr"
-	use zeroconf 	&& DYNAMIC_PRPLS+=",bonjour"
+	use gadu 	&& DEFAULT_PRPLS+=",gg"
+	use groupwise 	&& DEFAULT_PRPLS+=",novell"
+	use meanwhile 	&& DEFAULT_PRPLS+=",sametime"
+	use zephyr 	&& DEFAULT_PRPLS+=",zephyr"
+	use zeroconf 	&& DEFAULT_PRPLS+=",bonjour"
 
 	local myconf=(
 		--disable-mono
 		--disable-static
-		--with-dynamic-prpls="${DYNAMIC_PRPLS}"
+		# Don't downgrade F_S, we already set it in toolchain, bug #890276
+		--disable-fortify
+		--with-dynamic-prpls="${DEFAULT_PRPLS}"
 		--with-system-ssl-certs="${EPREFIX}/etc/ssl/certs/"
 		$(use X && echo "--x-includes=\"${EPREFIX}\"/usr/include/X11")
-		$(use_enable ncurses consoleui)
+		$(use_enable dbus)
+		$(use_enable debug)
+		$(use_enable doc doxygen)
+		$(use_enable gstreamer)
 		$(use_enable gtk gtkui)
 		$(use_enable gtk sm)
-		$(usex gtk '--enable-nls' "$(use_enable nls)")
-		$(use gtk && use_enable xscreensaver screensaver)
-		$(use gtk && use_enable prediction cap)
-		$(use gtk && use_enable eds gevolution)
-		$(use gtk && use_enable spell gtkspell)
+		$(use_enable idn)
+		$(use_enable meanwhile)
+		$(use_enable networkmanager nm)
+		$(use_enable ncurses consoleui)
 		$(use_enable perl)
+		$(use_enable sasl cyrus-sasl )
 		$(use_enable tk)
 		$(use_enable tcl)
-		$(use_enable debug)
-		$(use_enable dbus)
-		$(use_enable meanwhile)
-		$(use_enable gstreamer)
-		$(use_with gstreamer gstreamer 1.0)
-		$(use_enable gstreamer farstream)
-		$(use_enable gstreamer vv)
-		$(use_enable sasl cyrus-sasl )
-		$(use_enable doc doxygen)
-		$(use_enable networkmanager nm)
+		$(use_enable v4l farstream)
+		$(use_enable v4l gstreamer-video)
+		$(use_enable v4l vv)
 		$(use_enable zeroconf avahi)
-		$(use_enable idn)
-		$(use_with X x) \
+		$(use_with gstreamer gstreamer 1.0)
+		$(usex gtk '--enable-nls' "$(use_enable nls)")
+		$(use gtk && use_enable eds gevolution)
+		$(use gtk && use_enable prediction cap)
+		$(use gtk && use_enable spell gtkspell)
+		$(use gtk && use_enable xscreensaver screensaver)
+		$(use_with X x)
 	)
 
-	if use gnutls; then
+	if use gnutls ; then
 		einfo "Disabling NSS, using GnuTLS"
 		myconf+=(
-			--enable-nss=no
 			--enable-gnutls=yes
+			--enable-nss=no
 			--with-gnutls-includes="${EPREFIX}/usr/include/gnutls"
 			--with-gnutls-libs="${EPREFIX}/usr/$(get_libdir)"
 		)
@@ -241,7 +246,7 @@ src_configure() {
 }
 
 src_install() {
-	# setting this here because gnome2.eclass is not EAPI-7 ready
+	# setting this here because we no longer use gnome2.eclass
 	export GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL="1"
 	default
 
