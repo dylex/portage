@@ -107,7 +107,7 @@ REQUIRED_USE="
 "
 
 # Enable Default protocols
-DYNAMIC_PRPLS=""
+DEFAULT_PRPLS=""
 
 # List of plugins
 #   app-accessibility/pidgin-festival
@@ -173,12 +173,12 @@ src_configure() {
 	replace-flags -O? -O2
 	use pie && append-cflags -fPIE -pie
 
-	use irc && DYNAMIC_PRPLS+=",irc"
-	use jabber && DYNAMIC_PRPLS+=",jabber"
-	use yahoo && DYNAMIC_PRPLS+=",yahoo"
-	use simple && DYNAMIC_PRPLS+=",simple"
-	use msn && DYNAMIC_PRPLS+=",msn"
-	use myspace && DYNAMIC_PRPLS+=",myspace"
+	use irc && DEFAULT_PRPLS+=",irc"
+	use jabber && DEFAULT_PRPLS+=",jabber"
+	use yahoo && DEFAULT_PRPLS+=",yahoo"
+	use simple && DEFAULT_PRPLS+=",simple"
+	use msn && DEFAULT_PRPLS+=",msn"
+	use myspace && DEFAULT_PRPLS+=",myspace"
 	use gadu 	&& DEFAULT_PRPLS+=",gg"
 	use groupwise 	&& DEFAULT_PRPLS+=",novell"
 	use meanwhile 	&& DEFAULT_PRPLS+=",sametime"
