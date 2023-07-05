@@ -1,0 +1,218 @@
+--- a/dao/CdrDriver.cc	2009/09/12 16:21:25	1.1
++++ b/dao/CdrDriver.cc	2010/05/24 18:43:30
+@@ -1932,6 +1932,14 @@
+     }
+   }
+ 
++  if (nTracks == 0 && sessionNr != 1)
++  {
++    log_message(-1, "No tracks found for that session.");
++    delete[] rawToc;
++    delete[] completeToc;
++    return NULL;
++  }
++
+   if (nTracks == 0 || nTracks > 99) {
+     log_message(-1, "Found bogus toc data (0 or > 99 tracks). Please report!");
+     log_message(-1, "Your drive probably does not support raw toc reading.");
+@@ -4362,6 +4370,65 @@
+ 			(Sample*)buffer, beginsector, sectors);
+ }
+ 
+-void CdrDriver::paranoiaCallback(long, int)
++int CdrDriver::paranoiaError_ = 0;
++void CdrDriver::paranoiaCallback(long pos, int fun)
+ {
++	static long overlap;
++	int lev = 0;
++	const char *msg = NULL;
++	switch (fun)
++	{
++		case PARANOIA_CB_OVERLAP:
++			overlap = pos;
++			return;
++		case PARANOIA_CB_VERIFY:
++			lev = 1;
++			msg = "verify";
++			break;
++		case PARANOIA_CB_FIXUP_EDGE:
++			lev = 2;
++			msg = "fixup edge";
++			break;
++		case PARANOIA_CB_FIXUP_ATOM:
++			lev = 5;
++			msg = "fixup atom";
++			break;
++		case PARANOIA_CB_DRIFT:
++			lev = 3;
++			msg = "drift";
++			break;
++		case PARANOIA_CB_FIXUP_DROPPED:
++		case PARANOIA_CB_FIXUP_DUPED:
++			lev = 4;
++			msg = "fixup";
++			break;
++		case PARANOIA_CB_READERR:
++			lev = 6;
++			msg = "readerr";
++			break;
++		case PARANOIA_CB_SCRATCH:
++			lev = 7;
++			msg = "scratch";
++			break;
++		case PARANOIA_CB_SKIP:
++			lev = 8;
++			msg = "skip";
++			break;
++		case PARANOIA_CB_BACKOFF:
++			lev = 0;
++			msg = "backoff";
++			break;
++		case PARANOIA_CB_REPAIR:
++			lev = 0;
++			msg = "repair";
++			break;
++		default:
++			return;
++	}
++	if (lev <= 0)
++		return;
++	if (lev > 1)
++		printf(/* 5-lev, */ "PARANOIA: %10l %12s %.*s\n", pos, msg, lev, "**********");
++	if (lev > paranoiaError_)
++		paranoiaError_ = lev;
+ }
+--- a/dao/CdrDriver.h	2009/02/21 10:27:31	1.1
++++ b/dao/CdrDriver.h	2010/05/24 18:30:23
+@@ -339,6 +339,8 @@
+   // analyzes the CD structure and reads data
+   virtual Toc *readDisk(int session, const char *);
+ 
++  int paranoiaError() const { return paranoiaError_; }
++
+   // returns information about inserted medium
+   virtual DiskInfo *diskInfo() { return 0; }
+ 
+@@ -663,6 +665,7 @@
+   long audioReadCrcCount_;
+   int audioReadError_;
+   long audioReadProgress_;
++  static int paranoiaError_;
+   
+   // callback for the paranoia library, does nothing, currently
+   static void paranoiaCallback(long, int);
+--- a/dao/main.cc	2009/05/04 15:49:52	1.1
++++ b/dao/main.cc	2010/05/24 18:43:07
+@@ -171,6 +171,7 @@
+     bool reload;
+     bool force;
+     int  paranoiaMode;
++    int  paranoiaFail;
+     bool onTheFly;
+     bool writeSimulate;
+     bool saveSettings;
+@@ -237,6 +238,7 @@
+     options->mode2Mixed = true;
+     options->remoteFd = -1;
+     options->paranoiaMode = 3;
++    options->paranoiaFail = 0;
+     options->cddbTimeout = 60;
+     options->taoSourceAdjust = -1;
+     options->bufferUnderrunProtection = 1;
+@@ -434,6 +436,7 @@
+ "  --tao-source            - indicate that source CD was written in TAO mode\n"
+ "  --tao-source-adjust #   - # of link blocks for TAO source CDs (def. 2)\n"
+ "  --paranoia-mode #       - DAE paranoia mode (0..3)\n"
++"  --paranoia-fail #       - paranoia error level at which to fail (0..9)\n"
+ "  --with-cddb             - retrieve CDDB CD-TEXT data while copying\n"
+ "  --cddb-servers <list>   - sets space separated list of CDDB servers\n"
+ "  --cddb-timeout #        - timeout in seconds for CDDB server communication\n"
+@@ -910,6 +913,19 @@
+ 		    argc--, argv++;
+ 		}
+ 	    }
++	    else if (strcmp((*argv) + 2, "paranoia-fail") == 0) {
++		if (argc < 2) {
++		    log_message(-2, "Missing argument after: %s", *argv);
++		    return 1;
++		} else {
++		    opts->paranoiaFail= atol(argv[1]);
++		    if (opts->paranoiaFail < 0) {
++			log_message(-2, "Illegal paranoia mode: %s", argv[1]);
++			return 1;
++		    }
++		    argc--, argv++;
++		}
++	    }
+ 	    else if (strcmp((*argv) + 2, "remote") == 0) {
+ 		if (argc < 2) {
+ 		    log_message(-2, "Missing argument after: %s", *argv);
+@@ -2735,6 +2751,13 @@
+ 	}
+ 
+ 	log_message(1, "Reading of toc and track data finished successfully.");
++	{
++	int pe = cdr->paranoiaError();
++	if (pe)
++		log_message(1, "Paranoia error level %d\n", pe);
++	if (options.paranoiaFail && pe >= options.paranoiaFail)
++		exitCode = 1;
++	}
+ 	break;
+ 
+     case WRITE:
+--- a/utils/toc2cue.cc	2005/11/03 01:09:00	1.1
++++ b/utils/toc2cue.cc	2010/05/24 18:37:05
+@@ -286,7 +286,9 @@
+     return 1;
+   }
+ 
+-  out << "FILE \"" << binFileName << "\" BINARY" << "\n";
++  if (toc->catalogValid())
++	  out << "CATALOG " << toc->catalog() << std::endl;
++  out << "FILE \"" << binFileName << "\" BINARY" << std::endl;
+ 
+   long offset = 0;
+ 
+@@ -320,7 +322,18 @@
+       break;
+     }
+     
+-    out << "\n";
++    out << std::endl;
++
++    if (trun->preEmphasis() || trun->audioType())
++    {
++	    out << "    FLAGS";
++	    if (trun->preEmphasis())
++		    out << " PRE";
++	    if (trun->audioType())
++		    out << " 4CH" << std::endl;
++    }
++    if (trun->isrcValid())
++	    out << "    ISRC " << trun->isrc() << std::endl;
+ 
+     if ( trun->copyPermitted() ) {
+       out << "    FLAGS DCP\n";
+@@ -332,17 +345,17 @@
+ 
+     for (strun = stitr.first(); strun != NULL; strun = stitr.next()) {
+       if (strun->TrackData::type() == TrackData::ZERODATA) {
+-	out << "    PREGAP " << trun->start().str() << "\n";
++	out << "    PREGAP " << trun->start().str() << std::endl;
+ 	pregap = 1;
+       }
+       else {
+ 	if (!pregap && trun->start().lba() != 0) {
+-	  out << "    INDEX 00 " << Msf(offset).str() << "\n";
++	  out << "    INDEX 00 " << Msf(offset).str() << std::endl;
+ 	  out << "    INDEX 01 " 
+-	      << Msf(offset + trun->start().lba()).str() << "\n";
++	      << Msf(offset + trun->start().lba()).str() << std::endl;
+ 	}
+ 	else {
+-	  out << "    INDEX 01 " << Msf(offset).str() << "\n";
++	  out << "    INDEX 01 " << Msf(offset).str() << std::endl;
+ 	}
+ 
+ 	offset += trun->length().lba();

@@ -1,0 +1,230 @@
+diff -ur cdrdao-rel_1_2_5.orig/dao/CdrDriver.cc cdrdao-rel_1_2_5/dao/CdrDriver.cc
+--- cdrdao-rel_1_2_5.orig/dao/CdrDriver.cc	2023-02-03 09:48:06.000000000 -0500
++++ cdrdao-rel_1_2_5/dao/CdrDriver.cc	2023-07-02 15:44:45.205522957 -0400
+@@ -1957,6 +1957,14 @@
+     }
+   }
+ 
++  if (nTracks == 0 && sessionNr != 1)
++  {
++    log_message(-1, "No tracks found for that session.");
++    delete[] rawToc;
++    delete[] completeToc;
++    return NULL;
++  }
++
+   if (nTracks == 0 || nTracks > 99) {
+     log_message(-1, "Found bogus toc data (0 or > 99 tracks). Please report!");
+     log_message(-1, "Your drive probably does not support raw toc reading.");
+@@ -4428,8 +4436,67 @@
+ 			(Sample*)buffer, beginsector, sectors);
+ }
+ 
+-void CdrDriver::paranoiaCallback(long, int)
++int CdrDriver::paranoiaError_ = 0;
++void CdrDriver::paranoiaCallback(long pos, int fun)
+ {
++	static long overlap;
++	int lev = 0;
++	const char *msg = NULL;
++	switch (fun)
++	{
++		case PARANOIA_CB_OVERLAP:
++			overlap = pos;
++			return;
++		case PARANOIA_CB_VERIFY:
++			lev = 1;
++			msg = "verify";
++			break;
++		case PARANOIA_CB_FIXUP_EDGE:
++			lev = 2;
++			msg = "fixup edge";
++			break;
++		case PARANOIA_CB_FIXUP_ATOM:
++			lev = 5;
++			msg = "fixup atom";
++			break;
++		case PARANOIA_CB_DRIFT:
++			lev = 3;
++			msg = "drift";
++			break;
++		case PARANOIA_CB_FIXUP_DROPPED:
++		case PARANOIA_CB_FIXUP_DUPED:
++			lev = 4;
++			msg = "fixup";
++			break;
++		case PARANOIA_CB_READERR:
++			lev = 6;
++			msg = "readerr";
++			break;
++		case PARANOIA_CB_SCRATCH:
++			lev = 7;
++			msg = "scratch";
++			break;
++		case PARANOIA_CB_SKIP:
++			lev = 8;
++			msg = "skip";
++			break;
++		case PARANOIA_CB_BACKOFF:
++			lev = 0;
++			msg = "backoff";
++			break;
++		case PARANOIA_CB_REPAIR:
++			lev = 0;
++			msg = "repair";
++			break;
++		default:
++			return;
++	}
++	if (lev <= 0)
++		return;
++	if (lev > 1)
++		printf(/* 5-lev, */ "PARANOIA: %10lld %12s %.*s\n", pos, msg, lev, "**********");
++	if (lev > paranoiaError_)
++		paranoiaError_ = lev;
+ }
+ 
+ std::ostream& operator<<(std::ostream& os, const CdTextPack& pack)
+diff -ur cdrdao-rel_1_2_5.orig/dao/CdrDriver.h cdrdao-rel_1_2_5/dao/CdrDriver.h
+--- cdrdao-rel_1_2_5.orig/dao/CdrDriver.h	2023-02-03 09:48:06.000000000 -0500
++++ cdrdao-rel_1_2_5/dao/CdrDriver.h	2023-07-02 15:44:45.205522957 -0400
+@@ -345,6 +345,8 @@
+   // analyzes the CD structure and reads data
+   virtual Toc *readDisk(int session, const char *);
+ 
++  int paranoiaError() const { return paranoiaError_; }
++
+   // returns information about inserted medium
+   virtual DiskInfo *diskInfo() { return 0; }
+ 
+@@ -670,6 +672,7 @@
+   long audioReadCrcCount_;
+   int audioReadError_;
+   long audioReadProgress_;
++  static int paranoiaError_;
+   
+   // callback for the paranoia library, does nothing, currently
+   static void paranoiaCallback(long, int);
+diff -ur cdrdao-rel_1_2_5.orig/dao/main.cc cdrdao-rel_1_2_5/dao/main.cc
+--- cdrdao-rel_1_2_5.orig/dao/main.cc	2023-02-03 09:48:06.000000000 -0500
++++ cdrdao-rel_1_2_5/dao/main.cc	2023-07-02 15:48:41.750339234 -0400
+@@ -183,6 +183,7 @@
+     bool reload;
+     bool force;
+     int  paranoiaMode;
++    int  paranoiaFail;
+     bool onTheFly;
+     bool writeSimulate;
+     bool saveSettings;
+@@ -228,6 +229,7 @@
+     mode2Mixed = true;
+     remoteFd = -1;
+     paranoiaMode = 3;
++    paranoiaFail = 0;
+     cddbTimeout = 60;
+     userCapacity = 0;
+     taoSourceAdjust = -1;
+@@ -467,6 +469,7 @@
+ "  --tao-source            - indicate that source CD was written in TAO mode\n"
+ "  --tao-source-adjust #   - # of link blocks for TAO source CDs (def. 2)\n"
+ "  --paranoia-mode #       - DAE paranoia mode (0..3)\n"
++"  --paranoia-fail #       - paranoia error level at which to fail (0..9)\n"
+ "  --with-cddb             - retrieve CDDB CD-TEXT data while copying\n"
+ "  --cddb-servers <list>   - sets space separated list of CDDB servers\n"
+ "  --cddb-timeout #        - timeout in seconds for CDDB server communication\n"
+@@ -944,6 +947,19 @@
+ 		    argc--, argv++;
+ 		}
+ 	    }
++	    else if (strcmp((*argv) + 2, "paranoia-fail") == 0) {
++		if (argc < 2) {
++		    log_message(-2, "Missing argument after: %s", *argv);
++		    return 1;
++		} else {
++		    paranoiaFail= atol(argv[1]);
++		    if (paranoiaFail < 0) {
++			log_message(-2, "Illegal paranoia mode: %s", argv[1]);
++			return 1;
++		    }
++		    argc--, argv++;
++		}
++	    }
+ 	    else if (strcmp((*argv) + 2, "remote") == 0) {
+ 		if (argc < 2) {
+ 		    log_message(-2, "Missing argument after: %s", *argv);
+@@ -2864,6 +2880,13 @@
+ 	}
+ 
+ 	log_message(1, "Reading of toc and track data finished successfully.");
++	{
++	int pe = cdr->paranoiaError();
++	if (pe)
++		log_message(1, "Paranoia error level %d\n", pe);
++	if (options.paranoiaFail && pe >= options.paranoiaFail)
++		exitCode = 1;
++	}
+ 	break;
+ 
+     case WRITE:
+diff -ur cdrdao-rel_1_2_5.orig/utils/toc2cue.cc cdrdao-rel_1_2_5/utils/toc2cue.cc
+--- cdrdao-rel_1_2_5.orig/utils/toc2cue.cc	2023-02-03 09:48:06.000000000 -0500
++++ cdrdao-rel_1_2_5/utils/toc2cue.cc	2023-07-02 15:47:57.403394367 -0400
+@@ -421,12 +421,14 @@
+     return 1;
+   }
+ 
++  if (toc->catalogValid())
++	  out << "CATALOG " << toc->catalog() << std::endl;
+   if(convertedBinFile) {
+     // cue file needs to reference the new bin file
+-    out << "FILE \"" << convertedBinFile << "\" BINARY" << "\n";
++    out << "FILE \"" << convertedBinFile << "\" BINARY" << std::endl;
+   }
+   else {
+-    out << "FILE \"" << binFileName << "\" BINARY" << "\n";
++    out << "FILE \"" << binFileName << "\" BINARY" << std::endl;
+   }
+ 
+   long offset = 0;
+@@ -461,7 +463,18 @@
+       break;
+     }
+ 
+-    out << "\n";
++    out << std::endl;
++
++    if (trun->preEmphasis() || trun->audioType())
++    {
++	    out << "    FLAGS";
++	    if (trun->preEmphasis())
++		    out << " PRE";
++	    if (trun->audioType())
++		    out << " 4CH" << std::endl;
++    }
++    if (trun->isrcValid())
++	    out << "    ISRC " << trun->isrc() << std::endl;
+ 
+     if ( trun->copyPermitted() ) {
+       out << "    FLAGS DCP\n";
+@@ -473,17 +486,17 @@
+ 
+     for (strun = stitr.first(); strun != NULL; strun = stitr.next()) {
+       if (strun->TrackData::type() == TrackData::ZERODATA) {
+-	out << "    PREGAP " << trun->start().str() << "\n";
++	out << "    PREGAP " << trun->start().str() << std::endl;
+ 	pregap = 1;
+       }
+       else {
+ 	if (!pregap && trun->start().lba() != 0) {
+-	  out << "    INDEX 00 " << Msf(offset).str() << "\n";
++	  out << "    INDEX 00 " << Msf(offset).str() << std::endl;
+ 	  out << "    INDEX 01 "
+-	      << Msf(offset + trun->start().lba()).str() << "\n";
++	      << Msf(offset + trun->start().lba()).str() << std::endl;
+ 	}
+ 	else {
+-	  out << "    INDEX 01 " << Msf(offset).str() << "\n";
++	  out << "    INDEX 01 " << Msf(offset).str() << std::endl;
+ 	}
+ 
+ 	offset += trun->length().lba();
