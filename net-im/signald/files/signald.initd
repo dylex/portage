@@ -1,0 +1,28 @@
+#!/sbin/openrc-run
+# Copyright 2023 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+signald_data="/var/lib/signald"
+signald_socket="/run/signald"
+signald_socketfile="${signald_socket}/signald.sock"
+pidfile="${signald_socket}/signald.pid"
+
+name="signald daemon"
+command=/usr/bin/signald
+command_args="-d $signald_data -s $signald_socketfile"
+command_user="signald"
+command_group="signald"
+command_background="1"
+output_log="/var/log/signald"
+error_log="${output_log}"
+
+depend() {
+	need net
+	use dns
+}
+
+start_pre() {
+	checkpath -d -m 0750 -o "${command_user}:${command_group}" -q "${signald_data}"
+	checkpath -d -m 0750 -o "${command_user}:${command_group}" -q "${signald_socket}"
+	checkpath -f -m 0640 -o "${command_user}:${command_group}" -q "${output_log}"
+}
