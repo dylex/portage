@@ -23,7 +23,7 @@ DEPEND="
 	|| ( virtual/jdk:17 virtual/jre:17 )
 "
 RDEPEND="${DEPEND}"
-BDEPEND="app-eselect/eselect-gradle"
+BDEPEND="dev-java/gradle-bin"
 
 src_compile () {
 	ewarn "BROKEN WITH network-sandbox!"
