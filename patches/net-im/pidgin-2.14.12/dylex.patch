@@ -170,7 +170,7 @@ index b72c8ee92a..7ed0e2a4d3 100644
  	gnt_menuitem_set_id(GNT_MENU_ITEM(item), "join-chat");
  	gnt_menu_add_item(GNT_MENU(sub), item);
 diff --git a/finch/gntconv.c b/finch/gntconv.c
-index 24d1d45424..704cd62f99 100644
+index 24d1d45424..81a9c2775c 100644
 --- a/finch/gntconv.c
 +++ b/finch/gntconv.c
 @@ -44,6 +44,7 @@
@@ -207,7 +207,7 @@ index 24d1d45424..704cd62f99 100644
  static void
  send_to_cb(GntMenuItem *m, gpointer n)
  {
-@@ -536,6 +547,33 @@ view_log_cb(GntMenuItem *n, gpointer ggc)
+@@ -536,6 +547,41 @@ view_log_cb(GntMenuItem *n, gpointer ggc)
  	finch_log_show(type, name, account);
  }
  
@@ -222,7 +222,15 @@ index 24d1d45424..704cd62f99 100644
 +set_alertcount_cb(GntMenuItem *n, gpointer ggc) {
 +	FinchConv *fc = ggc;
 +	PurpleConversation *conv = fc->active_conv;
-+	PurpleBlistNode *node = get_conversation_blist_node(conv);
++	PurpleBlistNode *node = NULL;
++	switch (conv->type) {
++		case PURPLE_CONV_TYPE_IM:
++			node = PURPLE_BLIST_NODE(find_buddy_for_conversation(conv));
++			break;
++		case PURPLE_CONV_TYPE_CHAT:
++			node = PURPLE_BLIST_NODE(find_chat_for_conversation(conv));
++			break;
++	}
 +	g_return_if_fail(node);
 +	int alert = purple_blist_node_get_int(node, "alertcount");
 +	PurpleRequestFields *fields = purple_request_fields_new();
@@ -241,7 +249,7 @@ index 24d1d45424..704cd62f99 100644
  static void
  generate_send_to_menu(FinchConv *ggc)
  {
-@@ -665,6 +703,18 @@ gg_create_menu(FinchConv *ggc)
+@@ -665,6 +711,18 @@ gg_create_menu(FinchConv *ggc)
  			!(ggc->flags & FINCH_CONV_NO_SOUND));
  	gnt_menu_add_item(GNT_MENU(sub), item);
  	gnt_menuitem_set_callback(item, toggle_sound_cb, ggc);
@@ -260,7 +268,7 @@ index 24d1d45424..704cd62f99 100644
  }
  
  static void
-@@ -868,6 +918,9 @@ finch_create_conversation(PurpleConversation *conv)
+@@ -868,6 +926,9 @@ finch_create_conversation(PurpleConversation *conv)
  			!finch_sound_is_enabled())
  		ggc->flags |= FINCH_CONV_NO_SOUND;
  
@@ -270,7 +278,7 @@ index 24d1d45424..704cd62f99 100644
  	gg_create_menu(ggc);
  	gg_setup_commands(ggc, FALSE);
  
-@@ -906,7 +959,7 @@ finch_write_common(PurpleConversation *conv, const char *who, const char *messag
+@@ -906,7 +967,7 @@ finch_write_common(PurpleConversation *conv, const char *who, const char *messag
  		PurpleMessageFlags flags, time_t mtime)
  {
  	FinchConv *ggconv = FINCH_GET_DATA(conv);
@@ -279,7 +287,7 @@ index 24d1d45424..704cd62f99 100644
  	GntTextFormatFlags fl = 0;
  	int pos;
  
-@@ -933,7 +986,7 @@ finch_write_common(PurpleConversation *conv, const char *who, const char *messag
+@@ -933,7 +994,7 @@ finch_write_common(PurpleConversation *conv, const char *who, const char *messag
  		if (!mtime)
  			time(&mtime);
  		gnt_text_view_append_text_with_flags(GNT_TEXT_VIEW(ggconv->tv),
@@ -288,7 +296,7 @@ index 24d1d45424..704cd62f99 100644
  	}
  
  	gnt_text_view_append_text_with_flags(GNT_TEXT_VIEW(ggconv->tv), " ", GNT_TEXT_FLAG_NORMAL);
-@@ -976,14 +1029,7 @@ finch_write_common(PurpleConversation *conv, const char *who, const char *messag
+@@ -976,14 +1037,7 @@ finch_write_common(PurpleConversation *conv, const char *who, const char *messag
  	if (flags & PURPLE_MESSAGE_ERROR)
  		fl |= GNT_TEXT_FLAG_BOLD;
  
@@ -304,7 +312,7 @@ index 24d1d45424..704cd62f99 100644
  
  	if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM &&
  			purple_conv_im_get_typing_state(PURPLE_CONV_IM(conv)) == PURPLE_TYPING) {
-@@ -1072,7 +1118,7 @@ finch_chat_add_users(PurpleConversation *conv, GList *users, gboolean new_arriva
+@@ -1072,7 +1126,7 @@ finch_chat_add_users(PurpleConversation *conv, GList *users, gboolean new_arriva
  	FinchConv *ggc = FINCH_GET_DATA(conv);
  	GntEntry *entry = GNT_ENTRY(ggc->entry);
  
