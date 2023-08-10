@@ -1,0 +1,11 @@
+--- a/src/pcm/pcm_hw.c	2023-05-04 03:16:16.000000000 -0400
++++ b/src/pcm/pcm_hw.c	2023-08-09 21:59:12.290176452 -0400
+@@ -672,7 +672,7 @@
+ 
+ 	if (hw->prepare_reset_sw_params) {
+ 		snd_pcm_sw_params_current_no_lock(pcm, &sw_params);
+-		if (ioctl(hw->fd, SNDRV_PCM_IOCTL_SW_PARAMS, sw_params) < 0) {
++		if (ioctl(hw->fd, SNDRV_PCM_IOCTL_SW_PARAMS, &sw_params) < 0) {
+ 			err = -errno;
+ 			SYSMSG("SNDRV_PCM_IOCTL_SW_PARAMS failed (%i)", err);
+ 			return err;
