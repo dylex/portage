@@ -1,4 +1,5 @@
 app-editors/vim cscope terminal
+app-misc/jq -oniguruma
 app-shells/zsh -unicode
 app-text/mupdf -javascript
 dev-vcs/git -webdav
