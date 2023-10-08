@@ -1,6 +1,6 @@
 EAPI="7"
 
-POSTGRES_COMPAT=( 9.6 {10..14} )
+POSTGRES_COMPAT=( 9.6 {10..15} )
 
 inherit git-r3 postgres-multi
 
@@ -17,9 +17,9 @@ DEPEND="${POSTGRES_DEP}"
 RDEPEND="${DEPEND}"
 
 src_compile() {
-	postgres-multi_foreach emake
+	postgres-multi_foreach emake -e
 }
 
 src_install() {
-	postgres-multi_foreach emake DESTDIR="${D}" install
+	postgres-multi_foreach emake -e DESTDIR="${D}" install
 }
