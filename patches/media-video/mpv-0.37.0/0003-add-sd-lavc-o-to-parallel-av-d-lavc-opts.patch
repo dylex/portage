@@ -1,0 +1,58 @@
+From 32337d50aa54e50aa1e06bae7954c17db8e4db57 Mon Sep 17 00:00:00 2001
+From: Dylan Simon <dylan@dylex.net>
+Date: Fri, 21 Apr 2023 22:16:34 -0400
+Subject: [PATCH 3/3] add --sd-lavc-o to parallel --[av]d-lavc-opts
+
+---
+ options/options.c | 2 ++
+ options/options.h | 1 +
+ sub/sd_lavc.c     | 1 +
+ 3 files changed, 4 insertions(+)
+
+diff --git a/options/options.c b/options/options.c
+index 061708efd9..3a312bbb6c 100644
+--- a/options/options.c
++++ b/options/options.c
+@@ -71,6 +71,7 @@ extern const struct m_sub_options demux_mkv_conf;
+ extern const struct m_sub_options demux_cue_conf;
+ extern const struct m_sub_options vd_lavc_conf;
+ extern const struct m_sub_options ad_lavc_conf;
++extern const struct m_sub_options sub_lavc_conf;
+ extern const struct m_sub_options input_config;
+ extern const struct m_sub_options encode_config;
+ extern const struct m_sub_options ra_ctx_conf;
+@@ -326,6 +327,7 @@ const struct m_sub_options mp_subtitle_sub_opts = {
+         {"teletext-page", OPT_INT(teletext_page), M_RANGE(1, 999)},
+         {"sub-past-video-end", OPT_BOOL(sub_past_video_end)},
+         {"sub-ass-force-style", OPT_REPLACED("sub-ass-style-overrides")},
++        {"sd-lavc-o", OPT_KEYVALUELIST(sd_lavc_opts)},
+         {0}
+     },
+     .size = sizeof(OPT_BASE_STRUCT),
+diff --git a/options/options.h b/options/options.h
+index 2b20429ffd..91b8158439 100644
+--- a/options/options.h
++++ b/options/options.h
+@@ -118,6 +118,7 @@ struct mp_subtitle_opts {
+     bool sub_clear_on_seek;
+     int teletext_page;
+     bool sub_past_video_end;
++    char **sd_lavc_opts;
+ };
+ 
+ struct mp_sub_filter_opts {
+diff --git a/sub/sd_lavc.c b/sub/sd_lavc.c
+index 30aa641437..7ef6855d43 100644
+--- a/sub/sd_lavc.c
++++ b/sub/sd_lavc.c
+@@ -103,6 +103,7 @@ static int init(struct sd *sd)
+         goto error;
+     priv->pkt_timebase = mp_get_codec_timebase(sd->codec);
+     ctx->pkt_timebase = priv->pkt_timebase;
++    mp_set_avopts(sd->log, ctx, sd->opts->sd_lavc_opts);
+     if (avcodec_open2(ctx, sub_codec, NULL) < 0)
+         goto error;
+     priv->avctx = ctx;
+-- 
+2.41.0
+
