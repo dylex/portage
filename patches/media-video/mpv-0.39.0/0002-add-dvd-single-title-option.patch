@@ -1,0 +1,79 @@
+From cc60a20959632807d3c7ee7dc2329577222e21db Mon Sep 17 00:00:00 2001
+From: Dylan Simon <dylan@dylex.net>
+Date: Thu, 20 Apr 2023 23:56:30 -0400
+Subject: [PATCH 2/2] add --dvd-single-title option
+
+---
+ options/options.c      | 1 +
+ options/options.h      | 1 +
+ stream/stream_dvdnav.c | 9 +++++++++
+ 3 files changed, 11 insertions(+)
+
+diff --git a/options/options.c b/options/options.c
+index e0bc107cc0..098c960c73 100644
+--- a/options/options.c
++++ b/options/options.c
+@@ -456,6 +456,7 @@ const struct m_sub_options dvd_conf = {
+         {"dvd-device", OPT_STRING(device), .flags = M_OPT_FILE},
+         {"dvd-speed", OPT_INT(speed)},
+         {"dvd-angle", OPT_INT(angle), M_RANGE(1, 99)},
++        {"dvd-single-title", OPT_BOOL(single)},
+         {0}
+     },
+     .size = sizeof(struct dvd_opts),
+diff --git a/options/options.h b/options/options.h
+index 9bed9ca291..ce11f82673 100644
+--- a/options/options.h
++++ b/options/options.h
+@@ -409,6 +409,7 @@ struct dvd_opts {
+     int angle;
+     int speed;
+     char *device;
++    bool single;
+ };
+ 
+ struct filter_opts {
+diff --git a/stream/stream_dvdnav.c b/stream/stream_dvdnav.c
+index 5711d7de02..d6ff159320 100644
+--- a/stream/stream_dvdnav.c
++++ b/stream/stream_dvdnav.c
+@@ -70,6 +70,7 @@ struct priv {
+     char *device;
+ 
+     struct dvd_opts *opts;
++    bool stop;
+ };
+ 
+ #define DNE(e) [e] = # e
+@@ -260,6 +261,9 @@ static int fill_buffer(stream_t *s, void *buf, int max_len)
+     struct priv *priv = s->priv;
+     dvdnav_t *dvdnav = priv->dvdnav;
+ 
++    if (priv->stop && priv->opts->single)
++	    return 0;
++
+     if (max_len < 2048) {
+         MP_FATAL(s, "Short read size. Data corruption will follow. Please "
+                     "provide a patch.\n");
+@@ -283,6 +287,7 @@ static int fill_buffer(stream_t *s, void *buf, int max_len)
+         case DVDNAV_BLOCK_OK:
+             return len;
+         case DVDNAV_STOP:
++	    priv->stop = true;
+             return 0;
+         case DVDNAV_NAV_PACKET: {
+             pci_t *pnavpci = dvdnav_get_current_nav_pci(dvdnav);
+@@ -311,6 +316,10 @@ static int fill_buffer(stream_t *s, void *buf, int max_len)
+                 priv->had_initial_vts = true;
+                 break;
+             }
++	    if (priv->opts->single) {
++		    dvdnav_stop(dvdnav);
++		    return 0;
++	    }
+             if (dvdnav_current_title_info(dvdnav, &tit, &part) == DVDNAV_STATUS_OK)
+             {
+                 MP_VERBOSE(s, "DVDNAV, NEW TITLE %d\n", tit);
+-- 
+2.45.2
+
