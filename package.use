@@ -7,5 +7,5 @@ mail-client/mutt -imap -sasl -smtp
 media-gfx/feh curl exif
 media-libs/harfbuzz -graphite icu
 net-libs/webkit-gtk -pdf
-sys-boot/grub -fonts -themes
+sys-boot/grub -fonts -themes -branding
 x11-terms/xterm -unicode
