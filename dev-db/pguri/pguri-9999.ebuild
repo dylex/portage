@@ -1,6 +1,6 @@
 EAPI="7"
 
-POSTGRES_COMPAT=( 9.6 {10..17} )
+POSTGRES_COMPAT=( 9.6 {10..18} )
 
 inherit git-r3 postgres-multi
 
