@@ -1,0 +1,102 @@
+diff --git a/src/lang/english.txt b/src/lang/english.txt
+index 0b32a4a368..9845f75b38 100644
+--- a/src/lang/english.txt
++++ b/src/lang/english.txt
+@@ -284,7 +284,7 @@ STR_BUTTON_CATCHMENT                                            :{BLACK}Coverage
+ STR_TOOLTIP_CATCHMENT                                           :{BLACK}Toggle coverage area display
+ 
+ STR_TOOLTIP_CLOSE_WINDOW                                        :{BLACK}Close window
+-STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS                              :{BLACK}Window title - drag this to move window
++STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS                              :{BLACK}Window title - drag this to move window. Ctrl+Click to store current position as default
+ STR_TOOLTIP_SHADE                                               :{BLACK}Shade window - only show the title bar
+ STR_TOOLTIP_DEBUG                                               :{BLACK}Show NewGRF debug information
+ STR_TOOLTIP_DEFSIZE                                             :{BLACK}Resize window to default size. Ctrl+Click to store current size as default. Double Ctrl+Click to reset stored default
+diff --git a/src/lang/english_US.txt b/src/lang/english_US.txt
+index cb8e5649e4..0241f0cd7d 100644
+--- a/src/lang/english_US.txt
++++ b/src/lang/english_US.txt
+@@ -284,7 +284,7 @@ STR_BUTTON_CATCHMENT                                            :{BLACK}Coverage
+ STR_TOOLTIP_CATCHMENT                                           :{BLACK}Toggle coverage area display
+ 
+ STR_TOOLTIP_CLOSE_WINDOW                                        :{BLACK}Close window
+-STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS                              :{BLACK}Window title - drag this to move window
++STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS                              :{BLACK}Window title - drag this to move window. Ctrl+Click to store current position as default
+ STR_TOOLTIP_SHADE                                               :{BLACK}Shade window - only show the title bar
+ STR_TOOLTIP_DEBUG                                               :{BLACK}Show NewGRF debug information
+ STR_TOOLTIP_DEFSIZE                                             :{BLACK}Resize window to default size. Ctrl+Click to store current size as default. Double Ctrl+Click to reset stored default
+diff --git a/src/table/settings/window_settings.ini b/src/table/settings/window_settings.ini
+index 456f91b4de..2ee5df82c3 100644
+--- a/src/table/settings/window_settings.ini
++++ b/src/table/settings/window_settings.ini
+@@ -58,3 +58,17 @@ type     = SLE_INT16
+ def      = 0
+ min      = 0
+ max      = 32000
++
++[SDT_VAR]
++var      = pref_left
++type     = SLE_INT16
++def      = -1
++min      = -32000
++max      = 32000
++
++[SDT_VAR]
++var      = pref_top
++type     = SLE_INT16
++def      = -1
++min      = -1
++max      = 32000
+diff --git a/src/window.cpp b/src/window.cpp
+index 71c9ff2d0a..454eba8c82 100644
+--- a/src/window.cpp
++++ b/src/window.cpp
+@@ -685,7 +685,17 @@ static void DispatchLeftClickEvent(Window *w, int x, int y, int click_count)
+ 			return;
+ 
+ 		case WWT_CAPTION: // 'Title bar'
+-			StartWindowDrag(w);
++			if (_ctrl_pressed) {
++				if (_shift_pressed) {
++					w->window_desc.pref_left = -1;
++					w->window_desc.pref_top = -1;
++				} else {
++					w->window_desc.pref_left = w->left;
++					w->window_desc.pref_top = w->top;
++				}
++			} else {
++				StartWindowDrag(w);
++			}
+ 			return;
+ 
+ 		case WWT_RESIZEBOX:
+@@ -1727,12 +1737,16 @@ Point AlignInitialConstructionToolbar(int window_width)
+  */
+ static Point LocalGetWindowPlacement(const WindowDesc &desc, int16_t sm_width, int16_t sm_height, int window_number)
+ {
+-	Point pt;
++	Point pt = { desc.pref_left, desc.pref_top };
+ 	const Window *w;
+ 
+ 	int16_t default_width  = std::max(desc.GetDefaultWidth(),  sm_width);
+ 	int16_t default_height = std::max(desc.GetDefaultHeight(), sm_height);
+ 
++	if (pt.y >= 0 && pt.y < _screen.height &&
++			pt.x >= 10-default_width && pt.x < _screen.width-10)
++		return pt;
++
+ 	if (desc.parent_cls != WC_NONE && (w = FindWindowById(desc.parent_cls, window_number)) != nullptr) {
+ 		bool rtl = _current_text_dir == TD_RTL;
+ 		if (desc.parent_cls == WC_BUILD_TOOLBAR || desc.parent_cls == WC_SCEN_LAND_GEN) {
+diff --git a/src/window_gui.h b/src/window_gui.h
+index 934df38052..7c90f3edd8 100644
+--- a/src/window_gui.h
++++ b/src/window_gui.h
+@@ -186,6 +186,8 @@ struct WindowDesc {
+ 	bool pref_sticky = false; ///< Preferred stickyness.
+ 	int16_t pref_width = 0; ///< User-preferred width of the window. Zero if unset.
+ 	int16_t pref_height = 0; ///< User-preferred height of the window. Zero if unset.
++	int16_t pref_left = -1;
++	int16_t pref_top = -1;
+ 
+ 	int16_t GetDefaultWidth() const;
+ 	int16_t GetDefaultHeight() const;
